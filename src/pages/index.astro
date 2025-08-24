@@ -675,7 +675,7 @@ const config = {
 } as const
 
 // Platform detection
-const isMacOS = navigator.platform.includes('Mac') || (navigator as any).userAgentData?.platform === 'macOS'
+const isMacOS = /Mac/.test(navigator.userAgent)
 
 // Constants definition
 const offsetCache = new Map()
