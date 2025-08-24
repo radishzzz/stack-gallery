@@ -1,6 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions'
-import '../style/global.css'
+import '../style/reset.css'
 ---
 
 <html lang="zh-cn">
@@ -594,6 +594,11 @@ import '../style/global.css'
 </html>
 
 <style>
+.toggle-button {
+  position: absolute;
+  z-index: 999;
+}
+
 .image-stack {
   height: 100vh;
   height: 100dvh;
