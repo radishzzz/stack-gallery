@@ -17,11 +17,14 @@ body {
   /* Center the image wrapper */
   display: grid;
   place-items: center;
+
+  /* Optimize performance and prevent mobile scroll */
+  contain: content;
 }
 
 .image-wrapper {
   /* Control child image dimensions */
-  width: min(800px, 95vw);
+  width: min(800px, 95dvw);
   aspect-ratio: 1;
 
   /* Center child image */
@@ -34,6 +37,9 @@ body {
 
   /* Fix aspect-ratio height calculation issue */
   overflow: hidden;
+
+  /* Optimize performance */
+  contain: layout paint;
 }
 
 .image-wrapper.zoomed {
@@ -58,6 +64,10 @@ body {
 
   /* GSAP Easing Power2EaseInOut */
   transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+
+  /* Optimize performance */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .image-wrapper.zoomed .image-item {

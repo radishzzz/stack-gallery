@@ -600,17 +600,17 @@ import '../style/reset.css'
 }
 
 .image-stack {
-  height: 100vh;
   height: 100dvh;
-  width: 100vw;
+  height: 100dvh;
+  width: 100dvw;
   display: flex;
   align-items: center;
   justify-content: center;
-  --wrapper-size: calc(45.6px + 6vw);   /* 150px | 67.2px */
+  --wrapper-size: calc(45.6px + 6dvw);   /* 150px | 67.2px */
   contain: layout paint style;
 }
 .image-stack.expanded {
-  --wrapper-size: calc(76px + 10vw); /* 250px | 112px */
+  --wrapper-size: calc(76px + 10dvw); /* 250px | 112px */
 }
 
 .image-wrapper {
