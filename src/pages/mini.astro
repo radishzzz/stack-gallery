@@ -74,14 +74,3 @@ body {
   transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
 }
 </style>
-
-<script>
-function handleClick(event: MouseEvent) {
-  const target = event.target as HTMLElement
-
-  // Find closest image wrapper and toggle zoom class
-  target.closest('.image-wrapper')?.classList.toggle('zoomed')
-}
-
-document.addEventListener('click', handleClick)
-</script>
