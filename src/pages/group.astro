@@ -6,6 +6,18 @@ import Layout from '../layouts/Layout.astro'
   <div class="image-wrapper">
     <img src="/01.webp" class="image-item" alt="image" />
   </div>
+  <div class="image-wrapper">
+    <img src="/02.webp" class="image-item" alt="image" />
+  </div>
+  <div class="image-wrapper">
+    <img src="/01.webp" class="image-item" alt="image" />
+  </div>
+  <div class="image-wrapper">
+    <img src="/02.webp" class="image-item" alt="image" />
+  </div>
+  <div class="image-wrapper">
+    <img src="/01.webp" class="image-item" alt="image" />
+  </div>
 </Layout>
 
 <style>
@@ -14,15 +26,15 @@ body {
   width: 100dvw;
   height: 100dvh;
 
-  /* Center the image wrapper */
-  display: grid;
-  place-items: center;
-
   /* Optimize performance and prevent mobile scroll */
   contain: content;
 }
 
 .image-wrapper {
+  /* Center-aligned absolute positioning */
+  position: absolute;
+  transform: translate(-50%, -50%);
+
   /* Control child image dimensions */
   width: min(800px, 95dvw);
   aspect-ratio: 1;
@@ -40,6 +52,28 @@ body {
 
   /* Optimize performance */
   contain: layout paint;
+}
+
+/* Static stack layout */
+.image-wrapper:nth-child(1) {
+  left: calc(50vw + 2 * 15px);
+  top: calc(50vh - 2 * 9px);
+}
+.image-wrapper:nth-child(2) {
+  left: calc(50vw + 1 * 15px);
+  top: calc(50vh - 1 * 9px);
+}
+.image-wrapper:nth-child(3) {
+  left: calc(50vw + 0 * 15px);
+  top: calc(50vh - 0 * 9px);
+}
+.image-wrapper:nth-child(4) {
+  left: calc(50vw - 1 * 15px);
+  top: calc(50vh + 1 * 9px);
+}
+.image-wrapper:nth-child(5) {
+  left: calc(50vw - 2 * 15px);
+  top: calc(50vh + 2 * 9px);
 }
 
 .image-wrapper.zoomed {
@@ -74,3 +108,14 @@ body {
   transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
 }
 </style>
+
+<script>
+function handleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+
+  // Find closest image wrapper and toggle zoom class
+  target.closest('.image-wrapper')?.classList.toggle('zoomed')
+}
+
+document.addEventListener('click', handleClick)
+</script>
