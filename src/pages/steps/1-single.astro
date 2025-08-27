@@ -14,7 +14,7 @@ body {
   width: 100dvw;
   height: 100dvh;
 
-  /* Center the image wrapper */
+  /* Center child image wrapper */
   display: grid;
   place-items: center;
 
@@ -31,15 +31,12 @@ body {
   display: grid;
   place-items: center;
 
-  /* Mouse cursor style and click events */
+  /* Cursor style and click events */
   cursor: zoom-in;
   pointer-events: none;
 
-  /* Fix aspect-ratio height calculation issue */
-  overflow: hidden;
-
   /* Optimize performance */
-  contain: layout paint;
+  contain: layout style;
 }
 
 .image-wrapper.zoomed {
@@ -47,27 +44,21 @@ body {
 }
 
 .image-item {
-  /* Image dimensions */
-  width: auto;
-  height: auto;
+  /* Image sizing and fit */
   max-width: 100%;
   max-height: 100%;
-
-  /* Maintain aspect ratio */
   object-fit: contain;
+
+  /* 3D perspective effect and scale */
+  transform: perspective(5000px) rotateX(-45deg) rotateY(-45deg) scale(0.3);
+  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Handle click events */
   pointer-events: auto;
 
-  /* 3D perspective effect and scale */
-  transform: perspective(5000px) rotateX(-45deg) rotateY(-45deg) scale(0.3);
-
-  /* GSAP Easing Power2EaseInOut */
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-
   /* Optimize performance */
-  will-change: transform;
   backface-visibility: hidden;
+  will-change: transform;
 }
 
 .image-wrapper.zoomed .image-item {

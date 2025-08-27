@@ -83,33 +83,27 @@ body {
   width: 100dvw;
   height: 100dvh;
 
-  /* Center the image wrapper */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Center child image wrapper */
+  display: grid;
+  place-items: center;
 
   /* Optimize performance and prevent mobile scroll */
   contain: content;
 }
 
 .image-wrapper {
-  /* Absolute positioning for independent layers */
-  position: absolute;
+  /* Overlap all wrappers */
+  grid-area: 1 / 1;
 
   /* Control child image dimensions */
   width: min(800px, 95dvw);
   aspect-ratio: 1;
 
-  /* Fix aspect-ratio height calculation issue */
-  overflow: hidden;
-
   /* Center child image */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
 
   /* Stack layout */
-  z-index: var(--z-index);
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0);
   transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
 
@@ -127,23 +121,17 @@ body {
 }
 
 .image-item {
-  /* Image dimensions */
-  width: auto;
-  height: auto;
+  /* Image sizing and fit */
   max-width: 100%;
   max-height: 100%;
-
-  /* Maintain aspect ratio */
   object-fit: contain;
+
+  /* 3D perspective effect and scale */
+  transform: perspective(5000px) rotateX(-45deg) rotateY(-45deg) scale(0.3);
+  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Handle click events */
   pointer-events: auto;
-
-  /* 3D perspective effect and scale */
-  transform: perspective(5000px) rotateX(-45deg) rotateY(-45deg) scale(0.2);
-
-  /* GSAP Easing Power2EaseInOut */
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Optimize performance */
   backface-visibility: hidden;
@@ -172,21 +160,19 @@ function handleClick(event: MouseEvent) {
 function setupStack() {
   setTimeout(() => {
     const wrappers = document.querySelectorAll('.image-wrapper')
-    const wrapperCount = wrappers.length
-    const centerIndex = Math.floor(wrapperCount / 2)
+    const centerIndex = Math.floor(wrappers.length / 2)
 
     wrappers.forEach((element, index) => {
       const wrapper = element as HTMLElement
 
       // Calculate position
-      const relativeIndex = index - centerIndex
+      const relativeIndex = centerIndex - index
       const offsetX = relativeIndex * stackConfig.spacing
       const offsetY = relativeIndex * stackConfig.spacing * stackConfig.slope
 
       // Apply styles
       wrapper.style.setProperty('--offset-x', `${offsetX}px`)
       wrapper.style.setProperty('--offset-y', `${offsetY}px`)
-      wrapper.style.setProperty('--z-index', `${wrapperCount - index}`)
     })
   }, stackConfig.delay)
 }
