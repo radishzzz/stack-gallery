@@ -84,16 +84,17 @@ body {
   height: 100dvh;
 
   /* Center the image wrapper */
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* Optimize performance and prevent mobile scroll */
   contain: content;
 }
 
 .image-wrapper {
-  /* Overlap all wrappers */
-  grid-area: 1 / 1;
+  /* Absolute positioning for independent layers */
+  position: absolute;
 
   /* Control child image dimensions */
   width: min(800px, 95dvw);
@@ -103,8 +104,9 @@ body {
   overflow: hidden;
 
   /* Center child image */
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* Stack layout */
   z-index: var(--z-index);
