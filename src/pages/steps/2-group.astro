@@ -98,6 +98,10 @@ body {
   /* Fix aspect-ratio height calculation issue */
   overflow: hidden;
 
+  /* Position offset with animation */
+  transform: translate(var(--offset-x, 0px), var(--offset-y, 0px));
+  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+
   /* Optimize performance */
   contain: layout paint;
 }
@@ -136,6 +140,11 @@ body {
 </style>
 
 <script>
+const stackConfig = {
+  spacing: 50,
+  slope: -0.6,
+}
+
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement
 
@@ -143,5 +152,25 @@ function handleClick(event: MouseEvent) {
   target.closest('.image-wrapper')?.classList.toggle('zoomed')
 }
 
+function setupStack() {
+  const wrappers = document.querySelectorAll('.image-wrapper')
+  const centerIndex = Math.floor(wrappers.length / 2)
+
+  wrappers.forEach((element, index) => {
+    const wrapper = element as HTMLElement
+
+    // Calculate position
+    const relativeIndex = centerIndex - index
+    const offsetX = relativeIndex * stackConfig.spacing
+    const offsetY = relativeIndex * stackConfig.spacing * stackConfig.slope
+
+    // Apply styles
+    wrapper.style.setProperty('--offset-x', `${offsetX}px`)
+    wrapper.style.setProperty('--offset-y', `${offsetY}px`)
+  })
+}
+
+document.addEventListener('astro:page-load', () => setupStack())
 document.addEventListener('click', handleClick)
+setupStack()
 </script>
