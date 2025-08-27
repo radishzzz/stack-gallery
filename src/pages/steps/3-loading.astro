@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 ---
 
 <Layout>
+  <div class="counter" aria-hidden="true">[ 0%]</div>
   <div class="image-wrapper">
     <img src="/01.webp" class="image-item" alt="image" />
   </div>
@@ -79,6 +80,9 @@ body {
   contain: content;
 }
 
+.counter {
+}
+
 .image-wrapper {
   /* Overlap all wrappers */
   grid-area: 1 / 1;
@@ -141,9 +145,9 @@ body {
 
 <script>
 const stackConfig = {
-  spacing: 30,
+  spacing: 20,
   slope: -0.6,
-  delay: 500,
+  delay: 1000,
 }
 
 function handleClick(event: MouseEvent) {
@@ -173,7 +177,42 @@ function setupStack() {
   }, stackConfig.delay)
 }
 
-document.addEventListener('astro:page-load', () => setupStack())
+// 计数动画功能
+function startCounterAnimation() {
+  const counter = document.querySelector('.counter') as HTMLElement
+  if (!counter) {
+    return
+  }
+
+  const startTime = performance.now()
+  const duration = 2000
+
+  // 缓出函数 (ease-out)
+  function easeOut(t: number) {
+    return 1 - (1 - t) ** 3
+  }
+
+  function animate() {
+    const elapsed = performance.now() - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const easedProgress = easeOut(progress)
+    const value = Math.round(easedProgress * 100)
+
+    counter.textContent = `[ ${value}%]`
+
+    if (progress < 1) {
+      requestAnimationFrame(animate)
+    }
+  }
+
+  animate()
+}
+
+document.addEventListener('astro:page-load', () => {
+  setupStack()
+  startCounterAnimation()
+})
 document.addEventListener('click', handleClick)
 setupStack()
+startCounterAnimation()
 </script>
