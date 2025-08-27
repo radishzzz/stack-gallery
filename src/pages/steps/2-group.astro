@@ -207,24 +207,25 @@ body {
   width: min(800px, 95dvw);
   aspect-ratio: 1;
 
+  /* Fix aspect-ratio height calculation issue */
+  overflow: hidden;
+
   /* Center child image */
   display: grid;
   place-items: center;
 
-  /* Mouse cursor style and click events */
-  cursor: zoom-in;
-  pointer-events: none;
-
-  /* Fix aspect-ratio height calculation issue */
-  overflow: hidden;
-
-  /* Position offset with animation */
+  /* Stack layout */
+  z-index: var(--z-index);
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0);
   transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
 
+  /* Cursor style and click events */
+  cursor: zoom-in;
+  pointer-events: none;
+
   /* Optimize performance */
-  will-change: transform;
   contain: layout style;
+  will-change: transform;
 }
 
 .image-wrapper.zoomed {
@@ -251,8 +252,8 @@ body {
   transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Optimize performance */
-  will-change: transform;
   backface-visibility: hidden;
+  will-change: transform;
 }
 
 .image-wrapper.zoomed .image-item {
@@ -277,19 +278,21 @@ function handleClick(event: MouseEvent) {
 function setupStack() {
   setTimeout(() => {
     const wrappers = document.querySelectorAll('.image-wrapper')
-    const centerIndex = Math.floor(wrappers.length / 2)
+    const wrapperCount = wrappers.length
+    const centerIndex = Math.floor(wrapperCount / 2)
 
     wrappers.forEach((element, index) => {
       const wrapper = element as HTMLElement
 
       // Calculate position
-      const relativeIndex = centerIndex - index
+      const relativeIndex = index - centerIndex
       const offsetX = relativeIndex * stackConfig.spacing
       const offsetY = relativeIndex * stackConfig.spacing * stackConfig.slope
 
       // Apply styles
       wrapper.style.setProperty('--offset-x', `${offsetX}px`)
       wrapper.style.setProperty('--offset-y', `${offsetY}px`)
+      wrapper.style.setProperty('--z-index', `${wrapperCount - index}`)
     })
   }, stackConfig.delay)
 }
