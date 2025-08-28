@@ -99,7 +99,7 @@ import Layout from '../../layouts/Layout.astro'
   position: absolute;
 
   /* Control child image dimensions */
-  width: min(800px, 80dvh, 100dvw);
+  width: min(240px, 24dvh, 28.5dvw);
   aspect-ratio: 1;
 
   /* Center child image */
@@ -127,7 +127,7 @@ import Layout from '../../layouts/Layout.astro'
   object-fit: contain;
 
   /* 3D perspective effect and scale */
-  transform: perspective(5000px) rotateX(-45deg) rotateY(-45deg) scale(0.3);
+  transform: perspective(5000px) rotateX(-45deg) rotateY(-45deg) scale(1);
   transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Handle click events */
@@ -140,7 +140,7 @@ import Layout from '../../layouts/Layout.astro'
 }
 
 .image-item.zoomed {
-  transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
+  transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(3.33);
   cursor: zoom-out;
 }
 </style>
