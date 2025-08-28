@@ -28,7 +28,7 @@ body {
   position: absolute;
 
   /* Control child image dimensions */
-  width: min(800px, 95dvw);
+  width: min(800px, 80dvh, 95dvw);
   aspect-ratio: 1;
 
   /* Center child image */
@@ -68,6 +68,12 @@ body {
 
 .image-wrapper.zoomed .image-item {
   transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
+}
+
+@media (max-width: 768px) {
+  .image-item {
+    transform: perspective(300px) rotateX(-45deg) rotateY(0deg) scale(0.4);
+  }
 }
 </style>
 

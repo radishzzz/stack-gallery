@@ -152,13 +152,6 @@ const stackConfig = {
   delay: 500,
 }
 
-function handleClick(event: MouseEvent) {
-  const target = event.target as HTMLElement
-
-  // Find closest image wrapper and toggle zoom class
-  target.closest('.image-wrapper')?.classList.toggle('zoomed')
-}
-
 function setupStack() {
   setTimeout(() => {
     const wrappers = document.querySelectorAll('.image-wrapper')
@@ -177,6 +170,13 @@ function setupStack() {
       wrapper.style.setProperty('--offset-y', `${offsetY}px`)
     })
   }, stackConfig.delay)
+}
+
+function handleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+
+  // Find closest image wrapper and toggle zoom class
+  target.closest('.image-wrapper')?.classList.toggle('zoomed')
 }
 
 document.addEventListener('astro:page-load', () => setupStack())
