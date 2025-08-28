@@ -24,9 +24,12 @@ body {
 }
 
 .image-wrapper {
+  /* Overlap all wrappers */
+  position: absolute;
+
   /* Control child image dimensions */
   width: min(800px, 95dvw);
-  position: absolute;
+  aspect-ratio: 1;
 
   /* Center child image */
   display: flex;
