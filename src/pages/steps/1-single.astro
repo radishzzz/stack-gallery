@@ -4,60 +4,41 @@ import Layout from '../../layouts/Layout.astro'
 
 <Layout>
   <div class="image-stack">
-    <div class="image-wrapper">
-      <img src="/01.webp" class="image-item" alt="image" />
-    </div>
+    <img src="/01.webp" class="image-item" alt="image" />
   </div>
 </Layout>
 
 <style>
 .image-stack {
-  /* Full screen */
-  width: 100dvw;
-  height: 100dvh;
-
-  /* Center child image wrapper */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* Optimize performance and prevent mobile scroll */
-  contain: content;
-}
-
-.image-wrapper {
-  /* Overlap all wrappers */
-  position: absolute;
-
-  /* Control child image dimensions */
-  width: min(800px, 80dvh, 95dvw);
-  aspect-ratio: 1;
-
   /* Center child image */
   display: flex;
   align-items: center;
   justify-content: center;
 
-  /* Cursor style */
-  pointer-events: none;
+  /* Full screen */
+  width: 100dvw;
+  height: 100dvh;
 
-  /* Optimize performance */
-  contain: layout style;
+  /* Optimize performance and prevent mobile scroll */
+  contain: content;
 }
 
 .image-item {
-  /* Image sizing and fit */
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  /* Overlap all images */
+  position: absolute;
+
+  /* Max Size Limit */
+  width: auto;
+  height: auto;
+  max-width: min(800px, 80dvh, 95dvw);
+  max-height: min(800px, 80dvh, 95dvw);
 
   /* 3D perspective effect and scale */
   transform: perspective(5000px) rotateX(-45deg) rotateY(-45deg) scale(0.33);
   transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
-  /* Handle click events */
+  /* Cursor style */
   cursor: zoom-in;
-  pointer-events: auto;
 
   /* Optimize performance */
   backface-visibility: hidden;
