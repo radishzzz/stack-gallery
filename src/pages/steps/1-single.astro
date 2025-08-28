@@ -15,8 +15,9 @@ body {
   height: 100dvh;
 
   /* Center child image wrapper */
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* Optimize performance and prevent mobile scroll */
   contain: content;
@@ -25,11 +26,12 @@ body {
 .image-wrapper {
   /* Control child image dimensions */
   width: min(800px, 95dvw);
-  aspect-ratio: 1;
+  position: absolute;
 
   /* Center child image */
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* Cursor style and click events */
   cursor: zoom-in;
