@@ -80,7 +80,7 @@ import Layout from '../../layouts/Layout.astro'
 function handleClick(event: MouseEvent) {
   const target = event.target as HTMLElement
 
-  // Find closest image wrapper and toggle zoom class
+  // Find closest image and toggle zoom class
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
