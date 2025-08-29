@@ -1,0 +1,161 @@
+---
+import Layout from '../../layouts/Layout.astro'
+---
+
+<Layout>
+  <div class="image-stack">
+    <img src="/01.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
+    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/04.webp" class="image-item" alt="image" />
+    <img src="/05.webp" class="image-item" alt="image" />
+    <img src="/06.webp" class="image-item" alt="image" />
+    <img src="/07.webp" class="image-item" alt="image" />
+    <img src="/08.webp" class="image-item" alt="image" />
+    <img src="/09.webp" class="image-item" alt="image" />
+    <img src="/10.webp" class="image-item" alt="image" />
+    <img src="/11.webp" class="image-item" alt="image" />
+    <img src="/12.webp" class="image-item" alt="image" />
+    <img src="/13.webp" class="image-item" alt="image" />
+    <img src="/14.webp" class="image-item" alt="image" />
+    <img src="/15.webp" class="image-item" alt="image" />
+    <img src="/01.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
+    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/04.webp" class="image-item" alt="image" />
+    <img src="/05.webp" class="image-item" alt="image" />
+    <img src="/06.webp" class="image-item" alt="image" />
+    <img src="/07.webp" class="image-item" alt="image" />
+    <img src="/08.webp" class="image-item" alt="image" />
+    <img src="/09.webp" class="image-item" alt="image" />
+    <img src="/10.webp" class="image-item" alt="image" />
+    <img src="/11.webp" class="image-item" alt="image" />
+    <img src="/12.webp" class="image-item" alt="image" />
+    <img src="/13.webp" class="image-item" alt="image" />
+    <img src="/14.webp" class="image-item" alt="image" />
+    <img src="/15.webp" class="image-item" alt="image" />
+    <img src="/01.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
+    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/04.webp" class="image-item" alt="image" />
+    <img src="/05.webp" class="image-item" alt="image" />
+    <img src="/06.webp" class="image-item" alt="image" />
+    <img src="/07.webp" class="image-item" alt="image" />
+    <img src="/08.webp" class="image-item" alt="image" />
+    <img src="/09.webp" class="image-item" alt="image" />
+    <img src="/10.webp" class="image-item" alt="image" />
+    <img src="/11.webp" class="image-item" alt="image" />
+    <img src="/12.webp" class="image-item" alt="image" />
+    <img src="/13.webp" class="image-item" alt="image" />
+    <img src="/14.webp" class="image-item" alt="image" />
+    <img src="/15.webp" class="image-item" alt="image" />
+    <img src="/01.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
+    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/04.webp" class="image-item" alt="image" />
+    <img src="/05.webp" class="image-item" alt="image" />
+    <img src="/06.webp" class="image-item" alt="image" />
+    <img src="/07.webp" class="image-item" alt="image" />
+    <img src="/08.webp" class="image-item" alt="image" />
+    <img src="/09.webp" class="image-item" alt="image" />
+    <img src="/10.webp" class="image-item" alt="image" />
+    <img src="/11.webp" class="image-item" alt="image" />
+    <img src="/12.webp" class="image-item" alt="image" />
+    <img src="/13.webp" class="image-item" alt="image" />
+    <img src="/14.webp" class="image-item" alt="image" />
+    <img src="/15.webp" class="image-item" alt="image" />
+  </div>
+</Layout>
+
+<style>
+.image-stack {
+  /* Center child image */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Full screen */
+  width: 100dvw;
+  height: 100dvh;
+
+  /* Optimize performance and prevent mobile scroll */
+  contain: content;
+}
+
+.image-item {
+  /* Overlap all images */
+  position: absolute;
+
+  /* Max Size Limit */
+  max-width: min(800px, 80dvh, 95dvw);
+  max-height: min(800px, 80dvh, 95dvw);
+
+  /* 3D perspective effect and scale */
+  transform: perspective(none) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(-45deg) rotateY(-45deg) scale(0.33);
+  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+
+  /* Cursor style */
+  cursor: zoom-in;
+
+  /* Optimize performance */
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.image-item.zoomed {
+  transform: perspective(800px) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(0deg) rotateY(0deg) scale(1);
+  cursor: zoom-out;
+}
+
+.image-stack.loading .image-item {
+  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+</style>
+
+<script>
+const stackConfig = {
+  spacing: 60,
+  slope: -0.6,
+  delay: 1000,
+}
+
+function setupStack() {
+  setTimeout(() => {
+    const imageStack = document.querySelector('.image-stack')
+    const images = document.querySelectorAll('.image-item')
+    const centerIndex = Math.floor(images.length / 2)
+
+    // Add loading class
+    imageStack?.classList.add('loading')
+
+    images.forEach((element, index) => {
+      const image = element as HTMLImageElement
+
+      // Calculate position
+      const relativeIndex = centerIndex - index
+      const offsetX = relativeIndex * stackConfig.spacing
+      const offsetY = relativeIndex * stackConfig.spacing * stackConfig.slope
+
+      // Apply styles
+      image.style.setProperty('--offset-x', `${offsetX}px`)
+      image.style.setProperty('--offset-y', `${offsetY}px`)
+    })
+
+    // Remove loading class after delay
+    setTimeout(() => {
+      imageStack?.classList.remove('loading')
+    }, 800)
+  }, stackConfig.delay)
+}
+
+function handleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+
+  // Find closest image and toggle zoom class
+  target.closest('.image-item')?.classList.toggle('zoomed')
+}
+
+document.addEventListener('astro:page-load', () => setupStack())
+document.addEventListener('click', handleClick)
+setupStack()
+</script>

@@ -3,65 +3,75 @@ import Layout from '../../layouts/Layout.astro'
 ---
 
 <Layout>
+  <div class="counter" aria-hidden="true">[ 0%]</div>
   <div class="image-stack">
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
     <img src="/01.webp" class="image-item" alt="image" />
-    <img src="/03.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
   </div>
 </Layout>
 
 <style>
+.counter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 99;
+  color: white;
+}
+
 .image-stack {
   /* Center child image */
   display: flex;
@@ -149,7 +159,42 @@ function handleClick(event: MouseEvent) {
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
-document.addEventListener('astro:page-load', () => setupStack())
+// 计数动画功能
+function startCounterAnimation() {
+  const counter = document.querySelector('.counter') as HTMLElement
+  if (!counter) {
+    return
+  }
+
+  const startTime = performance.now()
+  const duration = 2000
+
+  // 缓出函数 (ease-out)
+  function easeOut(t: number) {
+    return 1 - (1 - t) ** 3
+  }
+
+  function animate() {
+    const elapsed = performance.now() - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const easedProgress = easeOut(progress)
+    const value = Math.round(easedProgress * 100)
+
+    counter.textContent = `[ ${value}%]`
+
+    if (progress < 1) {
+      requestAnimationFrame(animate)
+    }
+  }
+
+  animate()
+}
+
+document.addEventListener('astro:page-load', () => {
+  setupStack()
+  startCounterAnimation()
+})
 document.addEventListener('click', handleClick)
 setupStack()
+startCounterAnimation()
 </script>
