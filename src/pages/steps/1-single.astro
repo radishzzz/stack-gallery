@@ -10,7 +10,14 @@ import Layout from '../../layouts/Layout.astro'
 
 <style>
 .image-stack {
-  --image-size: min(100dvw, calc(450px + 21.875dvw), 800px);
+  /**
+  * Responsive image sizing:
+  * <= 480px: 100dvw
+  * 480px - 1600px: Linear scale from 480px to 800px
+  * >= 1600px: 800px
+  * Never exceeds 80dvh
+  */
+  --image-size: min(100dvw, calc((2400px + 200dvw) / 7), 800px, 80dvh);
 
   /* Center child image */
   display: flex;
