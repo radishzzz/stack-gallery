@@ -110,7 +110,7 @@ import Layout from '../../layouts/Layout.astro'
 const stackConfig = {
   spacing: 20,
   slope: -0.6,
-  delay: 800,
+  delay: 1000,
 }
 
 function setupStack() {
@@ -138,7 +138,7 @@ function setupStack() {
     // Remove loading class after delay
     setTimeout(() => {
       imageStack?.classList.remove('loading')
-    }, stackConfig.delay)
+    }, 800)
   }, stackConfig.delay)
 }
 
