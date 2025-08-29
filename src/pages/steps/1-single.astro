@@ -4,12 +4,14 @@ import Layout from '../../layouts/Layout.astro'
 
 <Layout>
   <div class="image-stack">
-    <img src="/01.webp" class="image-item" alt="image" />
+    <img src="/02.webp" class="image-item" alt="image" />
   </div>
 </Layout>
 
 <style>
 .image-stack {
+  --image-size: min(100dvw, calc((2400px + 200dvw) / 7), 800px);
+
   /* Center child image */
   display: flex;
   align-items: center;
@@ -28,8 +30,8 @@ import Layout from '../../layouts/Layout.astro'
   position: absolute;
 
   /* Max Size Limit */
-  max-width: min(800px, 80dvh, 100dvw);
-  max-height: min(800px, 80dvh, 100dvw);
+  max-width: var(--image-size);
+  max-height: var(--image-size);
 
   /* 3D perspective effect and scale */
   transform: perspective(none) rotateX(-45deg) rotateY(-45deg) scale(0.33);
