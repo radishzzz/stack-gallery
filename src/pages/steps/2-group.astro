@@ -102,19 +102,27 @@ import Layout from '../../layouts/Layout.astro'
   transform: perspective(800px) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(0deg) rotateY(0deg) scale(1);
   cursor: zoom-out;
 }
+
+.image-stack.loading .image-item {
+  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
 </style>
 
 <script>
 const stackConfig = {
   spacing: 20,
   slope: -0.6,
-  delay: 1000,
+  delay: 800,
 }
 
 function setupStack() {
   setTimeout(() => {
+    const imageStack = document.querySelector('.image-stack')
     const images = document.querySelectorAll('.image-item')
     const centerIndex = Math.floor(images.length / 2)
+
+    // Add loading class
+    imageStack?.classList.add('loading')
 
     images.forEach((element, index) => {
       const image = element as HTMLImageElement
@@ -128,6 +136,11 @@ function setupStack() {
       image.style.setProperty('--offset-x', `${offsetX}px`)
       image.style.setProperty('--offset-y', `${offsetY}px`)
     })
+
+    // Remove loading class after delay
+    setTimeout(() => {
+      imageStack?.classList.remove('loading')
+    }, stackConfig.delay)
   }, stackConfig.delay)
 }
 
