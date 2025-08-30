@@ -81,7 +81,7 @@ import Layout from '@/layouts/Layout.astro'
   max-height: var(--image-size);
 
   /* 3D perspective effect and scale */
-  transform: perspective(none) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
+  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
   transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Cursor style */
@@ -93,7 +93,7 @@ import Layout from '@/layouts/Layout.astro'
 }
 
 .image-item.zoomed {
-  transform: perspective(800px) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(0deg) rotateY(0deg) scale(1);
+  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
   cursor: zoom-out;
 }
 
