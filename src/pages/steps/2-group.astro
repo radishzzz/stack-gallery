@@ -169,17 +169,18 @@ function updateImageStyles(size: number, scale: number) {
   imageStack.style.setProperty('--image-scale', scale.toString())
 }
 
-function flashLoadingState() {
+function addLoadingState() {
   const imageStack = getImageStack()
-  if (!imageStack) {
-    return
+  if (imageStack) {
+    imageStack.classList.add('loading')
   }
+}
 
-  // Add temporary loading state
-  imageStack.classList.add('loading')
-  setTimeout(() => {
+function removeLoadingState() {
+  const imageStack = getImageStack()
+  if (imageStack) {
     imageStack.classList.remove('loading')
-  }, 800)
+  }
 }
 
 function updateImageOffsets(spacing: number) {
@@ -211,12 +212,18 @@ function setupStackLayout() {
   const scale = calculateImageScale(width)
   const spacing = calculateImageSpacing(size, scale)
 
+  // Add temporary loading state
+  addLoadingState()
   updateImageStyles(size, scale)
 
   setTimeout(() => {
-    flashLoadingState()
     updateImageOffsets(spacing)
   }, stackConfig.delay)
+
+  // Remove loading state after animation completed
+  setTimeout(() => {
+    removeLoadingState()
+  }, stackConfig.delay + 800)
 }
 
 function updateStackLayout() {
