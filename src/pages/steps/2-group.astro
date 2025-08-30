@@ -157,22 +157,33 @@ function calculateImageSpacing(size: number, scale: number) {
 
 function updateImageStyles(size: number, scale: number) {
   const imageStack = getImageStack()
-  imageStack?.style.setProperty('--image-size', `${size}px`)
-  imageStack?.style.setProperty('--image-scale', scale.toString())
+  if (!imageStack) {
+    return
+  }
+
+  imageStack.style.setProperty('--image-size', `${size}px`)
+  imageStack.style.setProperty('--image-scale', scale.toString())
 }
 
 function flashLoadingState() {
   const imageStack = getImageStack()
+  if (!imageStack) {
+    return
+  }
 
   // Add temporary loading state
-  imageStack?.classList.add('loading')
+  imageStack.classList.add('loading')
   setTimeout(() => {
-    imageStack?.classList.remove('loading')
+    imageStack.classList.remove('loading')
   }, 800)
 }
 
 function updateImageOffsets(spacing: number) {
   const images = getImages()
+  if (images.length === 0) {
+    return
+  }
+
   const centerIndex = Math.floor(images.length / 2)
 
   images.forEach((element, index) => {
