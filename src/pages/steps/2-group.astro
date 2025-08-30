@@ -58,36 +58,27 @@ import Layout from '@/layouts/Layout.astro'
 </Layout>
 
 <style>
-  .image-stack {
-    /**
-    * Responsive image sizing
-    * <= 480px: 100dvw
-    * 480px - 1600px: Linear scale from 480px to 800px
-    * >= 1600px: 800px
-    * Never exceeds 80dvh
-    */
-    --image-size: min(100dvw, calc((2400px + 200dvw) / 7), 800px, 80dvh);
+.image-stack {
+  /* Center child image */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    /* Center child image */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* Full screen */
+  width: 100dvw;
+  height: 100dvh;
 
-    /* Full screen */
-    width: 100dvw;
-    height: 100dvh;
+  /* Optimize performance and prevent mobile scroll */
+  contain: content;
+}
 
-    /* Optimize performance and prevent mobile scroll */
-    contain: content;
-  }
+.image-item {
+  /* Overlap all images */
+  position: absolute;
 
-  .image-item {
-    /* Overlap all images */
-    position: absolute;
-
-    /* Max Size Limit */
-    max-width: var(--image-size);
-    max-height: var(--image-size);
+  /* Max Size Limit */
+  max-width: var(--image-size);
+  max-height: var(--image-size);
 
   /* 3D perspective effect and scale */
   transform: perspective(none) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
@@ -113,9 +104,27 @@ import Layout from '@/layouts/Layout.astro'
 
 <script>
 const stackConfig = {
-  spacing: 70,
   slope: -0.6,
   delay: 1000,
+}
+
+/**
+ * Responsive image size
+ * <= 480px: 100dvw
+ * 480px - 1600px: Linear scale from 480px to 800px
+ * >= 1600px: 800px
+ * Never exceeds 80dvh
+ */
+function calculateImageSize() {
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const size = width <= 480
+    ? width
+    : width >= 1600
+      ? 800
+      : 480 + (width - 480) * 320 / 1120
+
+  return Math.min(size, height * 0.8)
 }
 
 /**
@@ -127,7 +136,26 @@ const stackConfig = {
 function calculateImageScale() {
   const width = window.innerWidth
   const scale = Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
+
   return scale.toString()
+}
+
+/**
+ * Calculate spacing based on actual image display width
+ * 1600px: 70px spacing (when image is 800px × 0.33 = 264px wide)
+ * 480px: 63px spacing (when image is 480px × 0.5 = 240px wide)
+ */
+function calculateImageSpacing() {
+  const size = calculateImageSize()
+  const scale = Number.parseFloat(calculateImageScale())
+  const spacing = size * scale * 63 / 240
+
+  return spacing
+}
+
+function updateImageSize() {
+  const imageStack = document.querySelector('.image-stack') as HTMLElement
+  imageStack?.style.setProperty('--image-size', `${calculateImageSize()}px`)
 }
 
 function updateImageScale() {
@@ -135,33 +163,49 @@ function updateImageScale() {
   imageStack?.style.setProperty('--image-scale', calculateImageScale())
 }
 
-function setupStackLayout() {
+function flashLoadingState() {
+  const imageStack = document.querySelector('.image-stack')
+
+  // Add temporary loading state
+  imageStack?.classList.add('loading')
   setTimeout(() => {
-    const imageStack = document.querySelector('.image-stack')
-    const images = document.querySelectorAll('.image-item')
-    const centerIndex = Math.floor(images.length / 2)
+    imageStack?.classList.remove('loading')
+  }, 800)
+}
 
-    // Add loading class
-    imageStack?.classList.add('loading')
+function updateImageOffsets() {
+  const images = document.querySelectorAll('.image-item')
+  const centerIndex = Math.floor(images.length / 2)
+  const spacing = calculateImageSpacing()
 
-    images.forEach((element, index) => {
-      const image = element as HTMLImageElement
+  images.forEach((element, index) => {
+    const image = element as HTMLImageElement
 
-      // Calculate position
-      const relativeIndex = centerIndex - index
-      const offsetX = relativeIndex * stackConfig.spacing
-      const offsetY = relativeIndex * stackConfig.spacing * stackConfig.slope
+    // Calculate position
+    const relativeIndex = centerIndex - index
+    const offsetX = relativeIndex * spacing
+    const offsetY = relativeIndex * spacing * stackConfig.slope
 
-      // Apply styles
-      image.style.setProperty('--offset-x', `${offsetX}px`)
-      image.style.setProperty('--offset-y', `${offsetY}px`)
-    })
+    // Apply styles
+    image.style.setProperty('--offset-x', `${offsetX}px`)
+    image.style.setProperty('--offset-y', `${offsetY}px`)
+  })
+}
 
-    // Remove loading class after delay
-    setTimeout(() => {
-      imageStack?.classList.remove('loading')
-    }, 800)
+function setupStackLayout() {
+  updateImageSize()
+  updateImageScale()
+
+  setTimeout(() => {
+    flashLoadingState()
+    updateImageOffsets()
   }, stackConfig.delay)
+}
+
+function updateStackLayout() {
+  updateImageSize()
+  updateImageScale()
+  updateImageOffsets()
 }
 
 function handleClick(event: MouseEvent) {
@@ -172,8 +216,7 @@ function handleClick(event: MouseEvent) {
 }
 
 document.addEventListener('astro:page-load', () => setupStackLayout())
-window.addEventListener('resize', updateImageScale)
+window.addEventListener('resize', updateStackLayout)
 document.addEventListener('click', handleClick)
-updateImageScale()
 setupStackLayout()
 </script>
