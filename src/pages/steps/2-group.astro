@@ -108,6 +108,17 @@ const stackConfig = {
   delay: 1000,
 }
 
+let cachedImageStack: HTMLElement | null = null
+let cachedImages: HTMLElement[] | null = null
+
+function getImageStack() {
+  return cachedImageStack ??= document.querySelector('.image-stack') as HTMLElement
+}
+
+function getImages() {
+  return cachedImages ??= Array.from(document.querySelectorAll('.image-item')) as HTMLElement[]
+}
+
 /**
  * Responsive image size
  * <= 480px: 100dvw
@@ -153,18 +164,14 @@ function calculateImageSpacing() {
   return spacing
 }
 
-function updateImageSize() {
-  const imageStack = document.querySelector('.image-stack') as HTMLElement
+function updateImageStyles() {
+  const imageStack = getImageStack()
   imageStack?.style.setProperty('--image-size', `${calculateImageSize()}px`)
-}
-
-function updateImageScale() {
-  const imageStack = document.querySelector('.image-stack') as HTMLElement
   imageStack?.style.setProperty('--image-scale', calculateImageScale())
 }
 
 function flashLoadingState() {
-  const imageStack = document.querySelector('.image-stack')
+  const imageStack = getImageStack()
 
   // Add temporary loading state
   imageStack?.classList.add('loading')
@@ -174,7 +181,7 @@ function flashLoadingState() {
 }
 
 function updateImageOffsets() {
-  const images = document.querySelectorAll('.image-item')
+  const images = getImages()
   const centerIndex = Math.floor(images.length / 2)
   const spacing = calculateImageSpacing()
 
@@ -193,8 +200,7 @@ function updateImageOffsets() {
 }
 
 function setupStackLayout() {
-  updateImageSize()
-  updateImageScale()
+  updateImageStyles()
 
   setTimeout(() => {
     flashLoadingState()
@@ -203,8 +209,7 @@ function setupStackLayout() {
 }
 
 function updateStackLayout() {
-  updateImageSize()
-  updateImageScale()
+  updateImageStyles()
   updateImageOffsets()
 }
 
