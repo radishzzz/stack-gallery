@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Stack Gallery is an interactive image gallery application featuring 3D stack effects, built with Astro and TypeScript. It showcases multiple gallery demos including single image displays, grouped image stacks, and advanced archive views with momentum scrolling.
+Stack Gallery is an interactive image gallery application featuring 3D stack effects, built with Astro and TypeScript.
 
 ## Development Commands
 
@@ -28,7 +28,7 @@ pnpm lint:fix
 ## Architecture & Technologies
 
 ### Core Stack
-- **Astro 5.13.4**: Modern web framework for content-focused sites
+- **Astro**: Modern web framework for content-focused sites
 - **TypeScript**: Strict mode enabled for type safety
 - **pnpm**: Package manager
 
@@ -40,11 +40,10 @@ pnpm lint:fix
 - Performance optimizations (CSS containment, will-change)
 
 ### Page Structure
+- `src/pages/drafts/`: Draft pages at design time, irrelevant, just for backups, ignore
+- `src/pages/steps/`: Each stage when refactoring the Stack Gallery, from simple to complex, is adding functionality incrementally, core
+- `src/pages/archive.astro`: Previously made demos, archived due to poor results, ready for refactoring, ignore
 - `src/pages/index.astro`: Main navigation hub
-- `src/pages/steps/1-single.astro`: Single image 3D demo
-- `src/pages/steps/2-group.astro`: Multiple image stack layout
-- `src/pages/steps/x-loading.astro`: Loading animation states
-- `src/pages/archive.astro`: Advanced gallery with toggle/scroll
 
 ## Development Setup
 
@@ -66,21 +65,14 @@ pnpm install
 ## Key Technical Details
 
 ### Assets
-- 50+ WebP images in `/public/` directory (01.webp, 02.webp, etc.)
+- 200 WebP images in `/public/` directory (01.webp, 02.webp, etc.)
 - Images referenced throughout gallery demos
-
+-
 ### CSS Architecture
 - Custom properties for dynamic values
 - Complex 3D transforms with perspective
 - Cubic-bezier easing for smooth animations
-- Responsive sizing with calc() and clamp() functions
-
-### JavaScript/TypeScript Patterns
-- State management for gallery interactions
-- Momentum scrolling algorithms
-- Touch event handling for mobile devices
-- RequestAnimationFrame for smooth animations
-- Platform detection (MacOS vs others)
+- Responsive using css variables
 
 ### Build Configuration
 - Site URL: https://stack-gallery.vercel.app
