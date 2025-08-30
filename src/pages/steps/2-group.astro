@@ -72,6 +72,10 @@ import Layout from '@/layouts/Layout.astro'
   contain: content;
 }
 
+.image-stack.loaded {
+  --animation-duration: 0.5s;
+}
+
 .image-item {
   /* Overlap all images */
   position: absolute;
@@ -82,23 +86,27 @@ import Layout from '@/layouts/Layout.astro'
 
   /* 3D perspective effect and scale */
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition: transform var(--animation-duration, 0.8s) cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Optimize performance */
   backface-visibility: hidden;
   will-change: transform;
 }
 
-.image-stack.loading .image-item {
-  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
-
-.image-stack:not(.loading) .image-item.zoomed {
+.image-stack.loaded .image-item.zoomed {
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
 }
 
-.image-stack:not(.loading) .image-item:not(.zoomed):hover {
-  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.1));
+.image-stack.loaded .image-item:not(.zoomed):hover {
+  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.15));
+}
+
+.image-stack.loaded:has(.image-item.zoomed) .image-item:not(.zoomed) {
+  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 0.1));
+}
+
+.image-stack.loaded:has(.image-item.zoomed) .image-item:not(.zoomed):hover {
+  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 0.2));
 }
 </style>
 
@@ -165,20 +173,6 @@ function updateImageStyles(size: number, scale: number) {
   imageStack.style.setProperty('--image-scale', scale.toString())
 }
 
-function addLoadingState() {
-  const imageStack = getImageStack()
-  if (imageStack) {
-    imageStack.classList.add('loading')
-  }
-}
-
-function removeLoadingState() {
-  const imageStack = getImageStack()
-  if (imageStack) {
-    imageStack.classList.remove('loading')
-  }
-}
-
 function updateImageOffsets(spacing: number) {
   const images = getImages()
   if (images.length === 0) {
@@ -208,17 +202,14 @@ function setupStackLayout() {
   const scale = calculateImageScale(width)
   const spacing = calculateImageSpacing(size, scale)
 
-  // Add temporary loading state
-  addLoadingState()
   updateImageStyles(size, scale)
 
   setTimeout(() => {
     updateImageOffsets(spacing)
   }, stackConfig.delay)
 
-  // Remove loading state after animation completed
   setTimeout(() => {
-    removeLoadingState()
+    getImageStack()?.classList.add('loaded')
   }, stackConfig.delay + 800)
 }
 
@@ -233,15 +224,26 @@ function updateStackLayout() {
   updateImageOffsets(spacing)
 }
 
-function handleClick(event: MouseEvent) {
-  const target = event.target as HTMLElement
+function handleGlobalClick(event: MouseEvent) {
+  const imageStack = getImageStack()
+  if (!imageStack?.classList.contains('loaded')) {
+    return
+  }
 
-  // Find closest image and toggle zoom class
-  target.closest('.image-item')?.classList.toggle('zoomed')
+  const target = event.target as HTMLElement
+  const clickedImage = target.closest('.image-item')
+  const clickedStack = target.closest('.image-stack')
+
+  if (clickedImage) {
+    clickedImage.classList.toggle('zoomed')
+  }
+  else if (clickedStack) {
+    getImages().forEach(img => img.classList.remove('zoomed'))
+  }
 }
 
 document.addEventListener('astro:after-swap', () => setupStackLayout())
 window.addEventListener('resize', updateStackLayout)
-document.addEventListener('click', handleClick)
+document.addEventListener('click', handleGlobalClick)
 setupStackLayout()
 </script>

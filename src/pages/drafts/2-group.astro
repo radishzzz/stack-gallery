@@ -100,14 +100,6 @@ import Layout from '@/layouts/Layout.astro'
 .image-stack.loaded .image-item:not(.zoomed):hover {
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.15));
 }
-
-.image-stack.loaded:has(.image-item.zoomed) .image-item:not(.zoomed) {
-  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 0.1));
-}
-
-.image-stack.loaded:has(.image-item.zoomed) .image-item:not(.zoomed):hover {
-  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 0.2));
-}
 </style>
 
 <script>
