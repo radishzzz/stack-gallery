@@ -62,30 +62,39 @@ import Layout from '../../layouts/Layout.astro'
 </Layout>
 
 <style>
-.image-stack {
-  /* Center child image */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  .image-stack {
+    /**
+    * Responsive image sizing
+    * <= 480px: 100dvw
+    * 480px - 1600px: Linear scale from 480px to 800px
+    * >= 1600px: 800px
+    * Never exceeds 80dvh
+    */
+    --image-size: min(100dvw, calc((2400px + 200dvw) / 7), 800px, 80dvh);
 
-  /* Full screen */
-  width: 100dvw;
-  height: 100dvh;
+    /* Center child image */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  /* Optimize performance and prevent mobile scroll */
-  contain: content;
-}
+    /* Full screen */
+    width: 100dvw;
+    height: 100dvh;
 
-.image-item {
-  /* Overlap all images */
-  position: absolute;
+    /* Optimize performance and prevent mobile scroll */
+    contain: content;
+  }
 
-  /* Max Size Limit */
-  max-width: min(800px, 80dvh, 100dvw);
-  max-height: min(800px, 80dvh, 100dvw);
+  .image-item {
+    /* Overlap all images */
+    position: absolute;
+
+    /* Max Size Limit */
+    max-width: var(--image-size);
+    max-height: var(--image-size);
 
   /* 3D perspective effect and scale */
-  transform: perspective(none) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(-45deg) rotateY(-45deg) scale(0.33);
+  transform: perspective(none) translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
   transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Cursor style */
@@ -108,12 +117,29 @@ import Layout from '../../layouts/Layout.astro'
 
 <script>
 const stackConfig = {
-  spacing: 20,
+  spacing: 45,
   slope: -0.6,
   delay: 1000,
 }
 
-function setupStack() {
+/**
+ * Responsive image scale
+ * <= 480px: 0.5
+ * 480px - 1600px: Linear scale from 0.5 to 0.33
+ * >= 1600px: 0.33
+ */
+function calculateImageScale() {
+  const width = window.innerWidth
+  const scale = Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
+  return scale.toString()
+}
+
+function updateImageScale() {
+  const imageStack = document.querySelector('.image-stack') as HTMLElement
+  imageStack?.style.setProperty('--image-scale', calculateImageScale())
+}
+
+function setupStackLayout() {
   setTimeout(() => {
     const imageStack = document.querySelector('.image-stack')
     const images = document.querySelectorAll('.image-item')
@@ -149,7 +175,9 @@ function handleClick(event: MouseEvent) {
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
-document.addEventListener('astro:page-load', () => setupStack())
+document.addEventListener('astro:page-load', () => setupStackLayout())
+window.addEventListener('resize', updateImageScale)
 document.addEventListener('click', handleClick)
-setupStack()
+updateImageScale()
+setupStackLayout()
 </script>
