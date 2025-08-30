@@ -43,6 +43,10 @@ import Layout from '@/layouts/Layout.astro'
 .image-item.zoomed {
   transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
 }
+
+.image-item:not(.zoomed):hover {
+  transform: perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.1));
+}
 </style>
 
 <script>

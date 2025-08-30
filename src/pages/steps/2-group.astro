@@ -93,12 +93,12 @@ import Layout from '@/layouts/Layout.astro'
   transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
-.image-stack:not(.loading) .image-item:not(.zoomed):hover {
-  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.1));
-}
-
 .image-stack:not(.loading) .image-item.zoomed {
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
+}
+
+.image-stack:not(.loading) .image-item:not(.zoomed):hover {
+  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.1));
 }
 </style>
 
@@ -240,7 +240,7 @@ function handleClick(event: MouseEvent) {
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
-document.addEventListener('astro:page-load', () => setupStackLayout())
+document.addEventListener('astro:after-swap', () => setupStackLayout())
 window.addEventListener('resize', updateStackLayout)
 document.addEventListener('click', handleClick)
 setupStackLayout()
