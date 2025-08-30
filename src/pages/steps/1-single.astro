@@ -65,15 +65,16 @@ import Layout from '@/layouts/Layout.astro'
  * 480px - 1600px: Linear scale from 0.5 to 0.33
  * >= 1600px: 0.33
  */
-function calculateImageScale() {
-  const width = window.innerWidth
-  const scale = Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
-  return scale.toString()
+function calculateImageScale(width: number) {
+  return Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
 }
 
-function updateImageScale() {
+function setupImageScale() {
+  const width = window.innerWidth
+  const scale = calculateImageScale(width)
   const imageStack = document.querySelector('.image-stack') as HTMLElement
-  imageStack?.style.setProperty('--image-scale', calculateImageScale())
+
+  imageStack?.style.setProperty('--image-scale', scale.toString())
 }
 
 function handleClick(event: MouseEvent) {
@@ -83,7 +84,8 @@ function handleClick(event: MouseEvent) {
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
-updateImageScale()
-window.addEventListener('resize', updateImageScale)
+document.addEventListener('astro:page-load', () => setupImageScale())
+window.addEventListener('resize', setupImageScale)
 document.addEventListener('click', handleClick)
+setupImageScale()
 </script>
