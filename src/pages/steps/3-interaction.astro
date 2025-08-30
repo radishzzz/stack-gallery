@@ -84,9 +84,6 @@ import Layout from '@/layouts/Layout.astro'
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
   transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
 
-  /* Cursor style */
-  cursor: zoom-in;
-
   /* Optimize performance */
   backface-visibility: hidden;
   will-change: transform;
@@ -102,7 +99,6 @@ import Layout from '@/layouts/Layout.astro'
 
 .image-stack:not(.loading) .image-item.zoomed {
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
-  cursor: zoom-out;
 }
 </style>
 
