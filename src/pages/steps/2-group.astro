@@ -126,9 +126,7 @@ function getImages() {
  * >= 1600px: 800px
  * Never exceeds 80dvh
  */
-function calculateImageSize() {
-  const width = window.innerWidth
-  const height = window.innerHeight
+function calculateImageSize(width: number, height: number) {
   const size = width <= 480
     ? width
     : width >= 1600
@@ -144,11 +142,8 @@ function calculateImageSize() {
  * 480px - 1600px: Linear scale from 0.5 to 0.33
  * >= 1600px: 0.33
  */
-function calculateImageScale() {
-  const width = window.innerWidth
-  const scale = Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
-
-  return scale.toString()
+function calculateImageScale(width: number) {
+  return Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
 }
 
 /**
@@ -156,18 +151,14 @@ function calculateImageScale() {
  * 1600px: 70px spacing (when image is 800px × 0.33 = 264px wide)
  * 480px: 63px spacing (when image is 480px × 0.5 = 240px wide)
  */
-function calculateImageSpacing() {
-  const size = calculateImageSize()
-  const scale = Number.parseFloat(calculateImageScale())
-  const spacing = size * scale * 63 / 240
-
-  return spacing
+function calculateImageSpacing(size: number, scale: number) {
+  return size * scale * 63 / 240
 }
 
-function updateImageStyles() {
+function updateImageStyles(size: number, scale: number) {
   const imageStack = getImageStack()
-  imageStack?.style.setProperty('--image-size', `${calculateImageSize()}px`)
-  imageStack?.style.setProperty('--image-scale', calculateImageScale())
+  imageStack?.style.setProperty('--image-size', `${size}px`)
+  imageStack?.style.setProperty('--image-scale', scale.toString())
 }
 
 function flashLoadingState() {
@@ -180,10 +171,9 @@ function flashLoadingState() {
   }, 800)
 }
 
-function updateImageOffsets() {
+function updateImageOffsets(spacing: number) {
   const images = getImages()
   const centerIndex = Math.floor(images.length / 2)
-  const spacing = calculateImageSpacing()
 
   images.forEach((element, index) => {
     const image = element as HTMLImageElement
@@ -200,17 +190,29 @@ function updateImageOffsets() {
 }
 
 function setupStackLayout() {
-  updateImageStyles()
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const size = calculateImageSize(width, height)
+  const scale = calculateImageScale(width)
+  const spacing = calculateImageSpacing(size, scale)
+
+  updateImageStyles(size, scale)
 
   setTimeout(() => {
     flashLoadingState()
-    updateImageOffsets()
+    updateImageOffsets(spacing)
   }, stackConfig.delay)
 }
 
 function updateStackLayout() {
-  updateImageStyles()
-  updateImageOffsets()
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const size = calculateImageSize(width, height)
+  const scale = calculateImageScale(width)
+  const spacing = calculateImageSpacing(size, scale)
+
+  updateImageStyles(size, scale)
+  updateImageOffsets(spacing)
 }
 
 function handleClick(event: MouseEvent) {
