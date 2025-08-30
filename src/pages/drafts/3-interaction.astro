@@ -80,9 +80,12 @@ import Layout from '@/layouts/Layout.astro'
   max-width: var(--image-size);
   max-height: var(--image-size);
 
+  /* Default hover scale */
+  --hover-scale: 1;
+
   /* 3D perspective effect and scale */
-  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * var(--hover-scale)));
+  transition: transform 0.45s cubic-bezier(0.645, 0.045, 0.355, 1);
 
   /* Cursor style */
   cursor: zoom-in;
@@ -92,17 +95,17 @@ import Layout from '@/layouts/Layout.astro'
   will-change: transform;
 }
 
-.image-stack.loading .image-item {
-  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
-
-.image-stack:not(.loading) .image-item:not(.zoomed):hover {
+.image-item:hover {
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.1));
 }
 
-.image-stack:not(.loading) .image-item.zoomed {
+.image-item.zoomed {
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
   cursor: zoom-out;
+}
+
+.image-stack.loading .image-item {
+  transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 </style>
 
@@ -157,6 +160,95 @@ function calculateImageScale(width: number) {
  */
 function calculateImageSpacing(size: number, scale: number) {
   return size * scale * 63 / 240
+}
+
+/**
+ * Calculate scale by distance using bezier curve
+ * distance: 1 = 0.5, distance: 2 = 0.6, distance: 3 = 0.7, etc.
+ */
+function calculateScaleByDistance(distance: number): number {
+  const baseScales = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  if (distance >= baseScales.length)
+    return 1.0
+
+  return baseScales[distance - 1] || 1.0
+}
+
+/**
+ * Handle image hover effect - only update affected image pairs
+ */
+function handleImageHover(hoveredIndex: number) {
+  const images = getImages()
+  const maxDistance = 6 // Maximum distance to apply effect
+
+  // Update image pairs based on distance from hovered image
+  for (let distance = 1; distance <= maxDistance; distance++) {
+    const leftIndex = hoveredIndex - distance
+    const rightIndex = hoveredIndex + distance
+    const scale = calculateScaleByDistance(distance)
+
+    // Update left image if exists
+    if (leftIndex >= 0) {
+      images[leftIndex].style.setProperty('--hover-scale', scale.toString())
+    }
+
+    // Update right image if exists
+    if (rightIndex < images.length) {
+      images[rightIndex].style.setProperty('--hover-scale', scale.toString())
+    }
+  }
+}
+
+/**
+ * Reset scales for affected image pairs only
+ */
+function resetAllScales(lastHoveredIndex: number) {
+  const images = getImages()
+  const maxDistance = 6 // Maximum distance to apply effect
+
+  // Reset image pairs based on distance from last hovered image
+  for (let distance = 1; distance <= maxDistance; distance++) {
+    const leftIndex = lastHoveredIndex - distance
+    const rightIndex = lastHoveredIndex + distance
+
+    // Reset left image if exists
+    if (leftIndex >= 0) {
+      images[leftIndex].style.setProperty('--hover-scale', '1')
+    }
+
+    // Reset right image if exists
+    if (rightIndex < images.length) {
+      images[rightIndex].style.setProperty('--hover-scale', '1')
+    }
+  }
+}
+
+/**
+ * Setup hover effects for all images
+ */
+function setupHoverEffects() {
+  const images = getImages()
+  let lastHoveredIndex = -1
+
+  images.forEach((img, index) => {
+    img.addEventListener('mouseenter', () => {
+      // Reset previous hover effects first
+      if (lastHoveredIndex !== -1) {
+        resetAllScales(lastHoveredIndex)
+      }
+
+      // Apply new hover effects
+      handleImageHover(index)
+      lastHoveredIndex = index
+    })
+
+    img.addEventListener('mouseleave', () => {
+      if (lastHoveredIndex !== -1) {
+        resetAllScales(lastHoveredIndex)
+        lastHoveredIndex = -1
+      }
+    })
+  })
 }
 
 function updateImageStyles(size: number, scale: number) {
@@ -216,6 +308,8 @@ function setupStackLayout() {
   setTimeout(() => {
     flashLoadingState()
     updateImageOffsets(spacing)
+    // Initialize hover effects after layout is set
+    setupHoverEffects()
   }, stackConfig.delay)
 }
 
