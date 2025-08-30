@@ -59,13 +59,6 @@ import Layout from '../../layouts/Layout.astro'
 </style>
 
 <script>
-function handleClick(event: MouseEvent) {
-  const target = event.target as HTMLElement
-
-  // Find closest image and toggle zoom class
-  target.closest('.image-item')?.classList.toggle('zoomed')
-}
-
 /**
  * Responsive image scale
  * <= 480px: 0.5
@@ -81,6 +74,13 @@ function calculateImageScale() {
 function updateImageScale() {
   const imageStack = document.querySelector('.image-stack') as HTMLElement
   imageStack?.style.setProperty('--image-scale', calculateImageScale())
+}
+
+function handleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+
+  // Find closest image and toggle zoom class
+  target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
 updateImageScale()
