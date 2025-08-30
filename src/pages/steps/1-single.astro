@@ -66,21 +66,24 @@ function handleClick(event: MouseEvent) {
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
-function updateImageScale() {
-  /**
-   * Responsive image scale
-   * <= 480px: 0.5
-   * 480px - 1600px: Linear scale from 0.5 to 0.33
-   * >= 1600px: 0.33
-   */
-  const vw = window.innerWidth
-  const scale = Math.max(0.33, Math.min(0.5, 0.5 - (vw - 480) * 0.17 / 1120))
+/**
+ * Responsive image scale
+ * <= 480px: 0.5
+ * 480px - 1600px: Linear scale from 0.5 to 0.33
+ * >= 1600px: 0.33
+ */
+function calculateImageScale() {
+  const width = window.innerWidth
+  const scale = Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
+  return scale.toString()
+}
 
+function updateImageScale() {
   const imageStack = document.querySelector('.image-stack') as HTMLElement
-  imageStack?.style.setProperty('--image-scale', scale.toString())
+  imageStack?.style.setProperty('--image-scale', calculateImageScale())
 }
 
 updateImageScale()
-document.addEventListener('click', handleClick)
 window.addEventListener('resize', updateImageScale)
+document.addEventListener('click', handleClick)
 </script>
