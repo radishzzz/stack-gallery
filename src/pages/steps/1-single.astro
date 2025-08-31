@@ -43,10 +43,6 @@ import Layout from '@/layouts/Layout.astro'
 .image-item.zoomed {
   transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
 }
-
-.image-item:not(.zoomed):hover {
-  transform: perspective(none) rotateX(-45deg) rotateY(-45deg) scale(calc(var(--image-scale) * 1.1));
-}
 </style>
 
 <script>
@@ -77,30 +73,34 @@ function calculateImageScale(width: number) {
   return Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
 }
 
-function setupImageScale() {
+function updateImageStyles(size: number, scale: number) {
   const imageStack = document.querySelector('.image-stack') as HTMLElement
   if (!imageStack) {
     return
   }
 
+  imageStack.style.setProperty('--image-size', `${size}px`)
+  imageStack.style.setProperty('--image-scale', scale.toString())
+}
+
+function setupImageScale() {
   const width = window.innerWidth
   const height = window.innerHeight
   const size = calculateImageSize(width, height)
   const scale = calculateImageScale(width)
 
-  imageStack?.style.setProperty('--image-size', `${size}px`)
-  imageStack?.style.setProperty('--image-scale', scale.toString())
+  updateImageStyles(size, scale)
 }
 
-function handleClick(event: MouseEvent) {
+function handleGlobalClick(event: MouseEvent) {
   const target = event.target as HTMLElement
 
   // Find closest image and toggle zoom class
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
-document.addEventListener('astro:page-load', () => setupImageScale())
+document.addEventListener('astro:after-swap', () => setupImageScale())
 window.addEventListener('resize', setupImageScale)
-document.addEventListener('click', handleClick)
+document.addEventListener('click', handleGlobalClick)
 setupImageScale()
 </script>
