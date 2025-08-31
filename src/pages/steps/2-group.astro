@@ -106,6 +106,9 @@ const switchDuration = 800
 let cachedImageStack: HTMLElement | null = null
 let cachedImages: HTMLElement[] | null = null
 let currentZoomedIndex: number | null = null
+let cachedLayoutMetrics: { width: number, height: number, result: ReturnType<typeof getLayoutMetrics> } | null = null
+let cachedOffsetScale: { width: number, result: number } | null = null
+let resizeTimer: number
 
 function getImageStack() {
   return cachedImageStack ??= document.querySelector('.image-stack') as HTMLElement
@@ -146,8 +149,8 @@ function getImageScale(width: number) {
 
 /**
  * Calculate spacing based on actual image display width
- * 1600px: 70px spacing (when image is 800px × 0.33 = 264px wide)
  * 480px: 63px spacing (when image is 480px × 0.5 = 240px wide)
+ * 1600px: 70px spacing (when image is 800px × 0.33 = 264px wide)
  */
 function getImageSpacing(size: number, scale: number) {
   return size * scale * 63 / 240
@@ -161,6 +164,21 @@ function getLayoutMetrics() {
   const spacing = getImageSpacing(size, scale)
 
   return { size, scale, spacing }
+}
+
+function getCachedLayoutMetrics() {
+  const width = window.innerWidth
+  const height = window.innerHeight
+
+  if (cachedLayoutMetrics
+    && cachedLayoutMetrics.width === width
+    && cachedLayoutMetrics.height === height) {
+    return cachedLayoutMetrics.result
+  }
+
+  const result = getLayoutMetrics()
+  cachedLayoutMetrics = { width, height, result }
+  return result
 }
 
 /**
@@ -178,6 +196,18 @@ function getAdditionalOffsetScale() {
     : viewportWidth <= 480
       ? 4.5
       : 4.5 + (7 - 4.5) * ratio
+}
+
+function getCachedAdditionalOffsetScale() {
+  const width = window.innerWidth
+
+  if (cachedOffsetScale && cachedOffsetScale.width === width) {
+    return cachedOffsetScale.result
+  }
+
+  const result = getAdditionalOffsetScale()
+  cachedOffsetScale = { width, result }
+  return result
 }
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -210,7 +240,7 @@ function applyImageOffsets(spacing: number) {
 
     // Apply additional offsets if an image is zoomed
     if (currentZoomedIndex !== null) {
-      const additionalOffset = spacing * getAdditionalOffsetScale()
+      const additionalOffset = spacing * getCachedAdditionalOffsetScale()
 
       if (index < currentZoomedIndex) {
         // Right group: move toward top-right
@@ -232,7 +262,7 @@ function applyImageOffsets(spacing: number) {
 }
 
 function setupStackLayout() {
-  const { size, scale, spacing } = getLayoutMetrics()
+  const { size, scale, spacing } = getCachedLayoutMetrics()
 
   applyImageSizeAndScale(size, scale)
 
@@ -246,18 +276,25 @@ function setupStackLayout() {
 }
 
 function updateImagePositions() {
-  const { spacing } = getLayoutMetrics()
+  const { spacing } = getCachedLayoutMetrics()
   applyImageOffsets(spacing)
 }
 
 function updateStackLayout() {
-  const { size, scale, spacing } = getLayoutMetrics()
+  const { size, scale, spacing } = getCachedLayoutMetrics()
 
   applyImageSizeAndScale(size, scale)
   applyImageOffsets(spacing)
 }
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+function updateStackLayoutOnResize() {
+  clearTimeout(resizeTimer)
+  resizeTimer = window.setTimeout(() => {
+    requestAnimationFrame(updateStackLayout)
+  }, 100)
+}
 
 function handleImageClick(clickedImage: HTMLElement) {
   const images = getImages()
@@ -306,7 +343,7 @@ function handleGlobalClick(event: MouseEvent) {
 }
 
 document.addEventListener('astro:after-swap', () => setupStackLayout())
-window.addEventListener('resize', updateStackLayout)
+window.addEventListener('resize', updateStackLayoutOnResize)
 document.addEventListener('click', handleGlobalClick)
 setupStackLayout()
 </script>
