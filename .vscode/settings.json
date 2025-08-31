@@ -50,6 +50,7 @@
   // Use workspace TypeScript version instead of built-in
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
-    "backface"
+    "backface",
+    "frontmatter"
   ]
 }
