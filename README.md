@@ -2,9 +2,11 @@
 
 ![stack-gallery](public/hero.jpeg)
 
-An interactive 3D image stack gallery. All images are from [EXIF Photo Blog](https://github.com/sambecker/exif-photo-blog).
+An interactive 3D image stack gallery.
 
 ## Demo
+
+> All images are from [EXIF Photo Blog](https://github.com/sambecker/exif-photo-blog)
 
 - [Index](https://stack-gallery.vercel.app/)
 
