@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Stack Gallery is an Astro-based web application that demonstrates progressive implementation steps for a 3D interactive image stack gallery. The project focuses on creating visually appealing image stacking effects with smooth transitions and responsive design.
+Stack Gallery is an Astro-based web application that demonstrates progressive implementation steps for an interactive 3D image stack gallery. The project focuses on creating visually appealing image stacking effects with smooth transitions and responsive design.
 
 ## Development Commands
 
