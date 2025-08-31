@@ -4,89 +4,77 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Stack Gallery is an interactive image gallery application featuring 3D stack effects, built with Astro and TypeScript.
+This is an interactive image stack gallery project that showcases advanced CSS transforms and JavaScript interactions. The project includes every step and draft from the creation process for learning and research purposes. The project uses modern web technologies while focusing on performance optimization.
 
-## Development Commands
-
-```bash
-# Development server with type checking
-pnpm dev
-
-# Production build with type checking
-pnpm build
-
-# Preview production build
-pnpm preview
-
-# Run ESLint
-pnpm lint
-
-# Run ESLint with auto-fix
-pnpm lint:fix
-```
-
-## Architecture & Technologies
-
-### Core Stack
-- **Astro**: Modern web framework for content-focused sites
-- **TypeScript**: Strict mode enabled for type safety
-- **pnpm**: Package manager
-
-### Key Features
-- 3D perspective transformations and image stacking
-- Momentum-based scrolling with touch support
-- Responsive design with adaptive sizing
-- Interactive zoom and navigation controls
-- Performance optimizations (CSS containment, will-change)
-
-### Page Structure
-- `src/pages/drafts/`: Draft pages at design time, irrelevant, just for backups, ignore
-- `src/pages/steps/`: Each stage when refactoring the Stack Gallery, from simple to complex, is adding functionality incrementally, core
-- `src/pages/archive.astro`: Previously made demos, archived due to poor results, ready for refactoring, ignore
-- `src/pages/index.astro`: Main navigation hub
-
-## Development Setup
+## Development
 
 ### Prerequisites
 - Node.js (version matching TypeScript ~5.9.2)
 - pnpm package manager
 
-### Initial Setup
+### Commands
+
 ```bash
-pnpm install
+pnpm dev      # Start development server
+pnpm build    # Build for production
+pnpm preview  # Preview production build
+pnpm lint     # Check code quality
+pnpm lint:fix # Fix linting issues
 ```
 
-### Code Quality
-- ESLint with @antfu/eslint-config configuration
-- TypeScript strict mode
-- Auto-fix on save in VS Code
-- No formal testing framework currently implemented
+## Technology Stack
 
-## Key Technical Details
+- **Astro**: Modern web framework for content-focused sites
+- **TypeScript**: Strict mode enabled for type safety
+- **pnpm**: Package manager
 
-### Assets
-- 200 WebP images in `/public/` directory (01.webp, 02.webp, etc.)
-- Images referenced throughout gallery demos
--
-### CSS Architecture
-- Custom properties for dynamic values
-- Complex 3D transforms with perspective
-- Cubic-bezier easing for smooth animations
-- Responsive using css variables
+### File Organization
 
-### Build Configuration
-- Site URL: https://stack-gallery.vercel.app
-- Trailing slash always enabled
-- Client router enabled for page transitions
-- Static site generation (no SSR requirements)
+```
+src/
+├── layouts/          # Global layout with base meta tags and Astro's client-side navigation
+├── pages/
+│   ├── drafts/          # All drafts from creation process, please ignore
+│   ├── index.astro          # Main navigation hub with links to different steps or drafts
+│   └── steps/          # All steps from creation process, the core of the project
+│       ├── 1-single.astro          # Single image with 3D perspective and zoom
+│       ├── 2-group.astro          # Add stack layout and group expansion effect to multiple images based on 1-single
+│       │── 3-scroll.astro          # Add scrolling functionality based on 2-group
+│       └── ...          # More steps to come
+└── style/          # Only very simple reset.css is included
+```
 
-## VS Code Configuration
+## Feature Details
 
-The project includes VS Code workspace settings for:
-- ESLint integration with auto-fix on save
-- Recommended extensions (ESLint, Astro)
-- TypeScript workspace version enforcement
+### Image Stack Implementation
 
-## Deployment
+The gallery uses sophisticated CSS transforms and JavaScript for image manipulation:
 
-Built as a static site that can be deployed to any static hosting platform. Currently configured for Vercel deployment.
+- **3D Perspective**: Images use `perspective()` and `rotateX/Y()` transforms
+- **Responsive Scaling**: Dynamic size calculation based on viewport dimensions
+- **Performance Optimizations**: `will-change`, `backface-visibility`, and CSS containment
+- **Caching System**: Layout metrics are cached to prevent redundant calculations
+
+### Responsive Design Strategy
+
+The project use breakpoint-based responsive calculations:
+
+- **Mobile (≤480px)**: Full viewport width, 0.5 scale factor
+- **Desktop (480px-1600px)**: Linear interpolation between mobile and desktop values
+- **Large (≥1600px)**: Fixed 800px max size, 0.33 scale factor
+
+## Engineering Practices
+
+### Code Patterns
+
+- **ESLint Configuration**: Uses @antfu/eslint-config
+- **TypeScript**: TypeScript strict mode with path aliases (`@/*` maps to `src/*`)
+- **Module System**: ES modules with proper import/export patterns
+- **CSS Custom Properties**: Used for dynamic styling updates
+
+### Performance optimization
+
+- Images use CSS transforms and will-change for hardware acceleration
+- Layout calculations are cached to prevent redundant computations
+- Resize events are debounced to improve performance
+- CSS containment is used to optimize rendering performance
