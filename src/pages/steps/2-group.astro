@@ -101,6 +101,7 @@ import Layout from '@/layouts/Layout.astro'
 <script>
 const stackSlope = -0.6
 const loadDelay = 1000
+const switchDuration = 800
 
 let cachedImageStack: HTMLElement | null = null
 let cachedImages: HTMLElement[] | null = null
@@ -162,6 +163,23 @@ function getLayoutMetrics() {
   return { size, scale, spacing }
 }
 
+/**
+ * Responsive additional offset scale
+ * <= 480px: 4.5
+ * 480px - 1600px: Linear scale from 4.5 to 7
+ * >= 1600px: 7
+ */
+function getAdditionalOffsetScale() {
+  const viewportWidth = window.innerWidth
+  const ratio = (viewportWidth - 480) / (1600 - 480)
+
+  return viewportWidth >= 1600
+    ? 7
+    : viewportWidth <= 480
+      ? 4.5
+      : 4.5 + (7 - 4.5) * ratio
+}
+
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 function applyImageSizeAndScale(size: number, scale: number) {
@@ -192,7 +210,7 @@ function applyImageOffsets(spacing: number) {
 
     // Apply additional offsets if an image is zoomed
     if (currentZoomedIndex !== null) {
-      const additionalOffset = spacing * 7
+      const additionalOffset = spacing * getAdditionalOffsetScale()
 
       if (index < currentZoomedIndex) {
         // Right group: move toward top-right
@@ -224,7 +242,7 @@ function setupStackLayout() {
 
   setTimeout(() => {
     getImageStack()?.classList.add('loaded')
-  }, loadDelay + 800)
+  }, loadDelay + switchDuration)
 }
 
 function updateImagePositions() {
