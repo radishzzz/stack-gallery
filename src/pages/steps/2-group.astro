@@ -123,7 +123,7 @@ function getImages() {
  * >= 1600px: 800px
  * Never exceeds 80dvh
  */
-function calculateImageSize(width: number, height: number) {
+function getImageSize(width: number, height: number) {
   const size = width <= 480
     ? width
     : width >= 1600
@@ -139,7 +139,7 @@ function calculateImageSize(width: number, height: number) {
  * 480px - 1600px: Linear scale from 0.5 to 0.33
  * >= 1600px: 0.33
  */
-function calculateImageScale(width: number) {
+function getImageScale(width: number) {
   return Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
 }
 
@@ -148,8 +148,17 @@ function calculateImageScale(width: number) {
  * 1600px: 70px spacing (when image is 800px × 0.33 = 264px wide)
  * 480px: 63px spacing (when image is 480px × 0.5 = 240px wide)
  */
-function calculateImageSpacing(size: number, scale: number) {
+function getImageSpacing(size: number, scale: number) {
   return size * scale * 63 / 240
+}
+
+function getLayoutMetrics() {
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const size = getImageSize(width, height)
+  const scale = getImageScale(width)
+  const spacing = getImageSpacing(size, scale)
+  return { size, scale, spacing }
 }
 
 function updateImageStyles(size: number, scale: number) {
@@ -202,11 +211,7 @@ function updateImageOffsets(spacing: number) {
 }
 
 function setupStackLayout() {
-  const width = window.innerWidth
-  const height = window.innerHeight
-  const size = calculateImageSize(width, height)
-  const scale = calculateImageScale(width)
-  const spacing = calculateImageSpacing(size, scale)
+  const { size, scale, spacing } = getLayoutMetrics()
 
   updateImageStyles(size, scale)
 
@@ -220,11 +225,7 @@ function setupStackLayout() {
 }
 
 function updateStackLayout() {
-  const width = window.innerWidth
-  const height = window.innerHeight
-  const size = calculateImageSize(width, height)
-  const scale = calculateImageScale(width)
-  const spacing = calculateImageSpacing(size, scale)
+  const { size, scale, spacing } = getLayoutMetrics()
 
   updateImageStyles(size, scale)
   updateImageOffsets(spacing)
@@ -256,12 +257,7 @@ function handleGlobalClick(event: MouseEvent) {
       clickedImage.classList.add('zoomed')
     }
 
-    // Recalculate positions
-    const width = window.innerWidth
-    const height = window.innerHeight
-    const size = calculateImageSize(width, height)
-    const scale = calculateImageScale(width)
-    const spacing = calculateImageSpacing(size, scale)
+    const { spacing } = getLayoutMetrics()
 
     updateImageOffsets(spacing)
   }
@@ -270,12 +266,7 @@ function handleGlobalClick(event: MouseEvent) {
     currentZoomedIndex = null
     getImages().forEach(img => img.classList.remove('zoomed'))
 
-    // Recalculate positions
-    const width = window.innerWidth
-    const height = window.innerHeight
-    const size = calculateImageSize(width, height)
-    const scale = calculateImageScale(width)
-    const spacing = calculateImageSpacing(size, scale)
+    const { spacing } = getLayoutMetrics()
 
     updateImageOffsets(spacing)
   }
