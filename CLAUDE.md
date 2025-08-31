@@ -6,13 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an interactive image stack gallery project that showcases advanced CSS transforms and JavaScript interactions. The project includes every step and draft from the creation process for learning and research purposes. The project uses modern web technologies while focusing on performance optimization.
 
-## Development
-
-### Prerequisites
-- Node.js (version matching TypeScript ~5.9.2)
-- pnpm package manager
-
-### Commands
+## Development Commands
 
 ```bash
 pnpm dev      # Start development server
@@ -28,7 +22,7 @@ pnpm lint:fix # Fix linting issues
 - **TypeScript**: Strict mode enabled for type safety
 - **pnpm**: Package manager
 
-### File Organization
+### Project Structure
 
 ```
 src/
@@ -44,7 +38,7 @@ src/
 └── style/          # Only very simple reset.css is included
 ```
 
-## Feature Details
+## Core Architecture
 
 ### Image Stack Implementation
 
@@ -65,7 +59,7 @@ The project use breakpoint-based responsive calculations:
 
 ## Engineering Practices
 
-### Code Patterns
+### Code Standards
 
 - **ESLint Configuration**: Uses @antfu/eslint-config
 - **TypeScript**: TypeScript strict mode with path aliases (`@/*` maps to `src/*`)
