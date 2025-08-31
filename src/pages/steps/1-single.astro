@@ -73,7 +73,7 @@ function calculateImageScale(width: number) {
   return Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
 }
 
-function updateImageStyles(size: number, scale: number) {
+function appleImageSizeAndScale(size: number, scale: number) {
   const imageStack = document.querySelector('.image-stack') as HTMLElement
   if (!imageStack) {
     return
@@ -83,13 +83,13 @@ function updateImageStyles(size: number, scale: number) {
   imageStack.style.setProperty('--image-scale', scale.toString())
 }
 
-function setupImageScale() {
+function setupImageLayout() {
   const width = window.innerWidth
   const height = window.innerHeight
   const size = calculateImageSize(width, height)
   const scale = calculateImageScale(width)
 
-  updateImageStyles(size, scale)
+  appleImageSizeAndScale(size, scale)
 }
 
 function handleGlobalClick(event: MouseEvent) {
@@ -99,8 +99,8 @@ function handleGlobalClick(event: MouseEvent) {
   target.closest('.image-item')?.classList.toggle('zoomed')
 }
 
-document.addEventListener('astro:after-swap', () => setupImageScale())
-window.addEventListener('resize', setupImageScale)
+document.addEventListener('astro:after-swap', () => setupImageLayout())
+window.addEventListener('resize', setupImageLayout)
 document.addEventListener('click', handleGlobalClick)
-setupImageScale()
+setupImageLayout()
 </script>
