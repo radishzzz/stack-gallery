@@ -2,7 +2,7 @@
 
 ![stack-gallery](public/hero.jpeg)
 
-An interactive 3D image stack gallery inspired by [Every Second](https://www.behance.net/gallery/80083153/Every-Second).
+An interactive 3D image stack gallery. Inspired by [Every Second](https://www.behance.net/gallery/80083153/Every-Second).
 
 ## Demo
 
