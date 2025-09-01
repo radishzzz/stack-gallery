@@ -270,7 +270,12 @@ function applyImageOffsets(spacing: number) {
 }
 
 function setupStackLayout() {
+  const imageStack = getImageStack()
   const images = getImages()
+  if (!imageStack || images.length === 0) {
+    return
+  }
+
   currentCenterIndex = Math.floor(images.length / 2)
   const { size, scale, spacing } = getCachedLayoutMetrics()
 
@@ -281,7 +286,7 @@ function setupStackLayout() {
   }, loadDelay)
 
   setTimeout(() => {
-    getImageStack()?.classList.add('loaded')
+    imageStack.classList.add('loaded')
   }, loadDelay + switchDuration)
 }
 
