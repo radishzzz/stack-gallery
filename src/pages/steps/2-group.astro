@@ -191,7 +191,7 @@ function getCachedLayoutMetrics() {
 function getAdditionalOffsetScale() {
   const viewportWidth = window.innerWidth
   const ratio = (viewportWidth - 480) / (1600 - 480)
-
+  
   return viewportWidth >= 1600
     ? 7
     : viewportWidth <= 480
@@ -297,7 +297,6 @@ function updateImagePositions() {
 
 function updateStackLayout() {
   const { size, scale, spacing } = getCachedLayoutMetrics()
-
   applyImageSizeAndScale(size, scale)
   applyImageOffsets(spacing)
 }
