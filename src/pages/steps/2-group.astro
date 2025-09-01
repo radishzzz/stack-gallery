@@ -103,19 +103,20 @@ const stackSlope = -0.6
 const loadDelay = 1000
 const switchDuration = 800
 
+let resizeTimer: number
 let cachedImageStack: HTMLElement | null = null
-let cachedImages: HTMLElement[] | null = null
-let currentZoomedIndex: number | null = null
+let cachedImages: HTMLImageElement[] | null = null
+let currentCenterIndex: number | null = null
 let cachedLayoutMetrics: { width: number, height: number, result: ReturnType<typeof getLayoutMetrics> } | null = null
 let cachedOffsetScale: { width: number, result: number } | null = null
-let resizeTimer: number
 
-function getImageStack() {
-  return cachedImageStack ??= document.querySelector('.image-stack') as HTMLElement
-}
-
-function getImages() {
-  return cachedImages ??= Array.from(document.querySelectorAll('.image-item')) as HTMLElement[]
+function cleanupResources() {
+  clearTimeout(resizeTimer)
+  cachedImageStack = null
+  cachedImages = null
+  currentCenterIndex = null
+  cachedLayoutMetrics = null
+  cachedOffsetScale = null
 }
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -212,6 +213,14 @@ function getCachedAdditionalOffsetScale() {
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+function getImageStack() {
+  return cachedImageStack ??= document.querySelector('.image-stack') as HTMLElement
+}
+
+function getImages() {
+  return cachedImages ??= Array.from(document.querySelectorAll('.image-item')) as HTMLImageElement[]
+}
+
 function applyImageSizeAndScale(size: number, scale: number) {
   const imageStack = getImageStack()
   if (!imageStack) {
@@ -228,26 +237,25 @@ function applyImageOffsets(spacing: number) {
     return
   }
 
-  const centerIndex = Math.floor(images.length / 2)
+  const defaultCenterIndex = Math.floor(images.length / 2)
+  const centerIndex = currentCenterIndex ?? defaultCenterIndex
 
-  images.forEach((element, index) => {
-    const image = element as HTMLImageElement
-
+  images.forEach((image, index) => {
     // Calculate base position
     const relativeIndex = centerIndex - index
     let offsetX = relativeIndex * spacing
     let offsetY = relativeIndex * spacing * stackSlope
 
-    // Apply additional offsets if an image is zoomed
-    if (currentZoomedIndex !== null) {
+    // Apply additional offsets if the center image is zoomed
+    if (images[centerIndex]?.classList.contains('zoomed')) {
       const additionalOffset = spacing * getCachedAdditionalOffsetScale()
 
-      if (index < currentZoomedIndex) {
+      if (index < centerIndex) {
         // Right group: move toward top-right
         offsetX += additionalOffset
         offsetY += additionalOffset * stackSlope
       }
-      else if (index > currentZoomedIndex) {
+      else if (index > centerIndex) {
         // Left group: move toward bottom-left
         offsetX -= additionalOffset
         offsetY -= additionalOffset * stackSlope
@@ -262,6 +270,8 @@ function applyImageOffsets(spacing: number) {
 }
 
 function setupStackLayout() {
+  const images = getImages()
+  currentCenterIndex = Math.floor(images.length / 2)
   const { size, scale, spacing } = getCachedLayoutMetrics()
 
   applyImageSizeAndScale(size, scale)
@@ -296,32 +306,6 @@ function updateStackLayoutOnResize() {
   }, 100)
 }
 
-function handleImageClick(clickedImage: HTMLElement) {
-  const images = getImages()
-  const clickedIndex = images.indexOf(clickedImage)
-
-  if (currentZoomedIndex === clickedIndex) {
-    // Clicking the same image - collapse
-    currentZoomedIndex = null
-    clickedImage.classList.remove('zoomed')
-  }
-  else {
-    // Clicking a different image - expand
-    currentZoomedIndex = clickedIndex
-    images.forEach(img => img.classList.remove('zoomed'))
-    clickedImage.classList.add('zoomed')
-  }
-
-  updateImagePositions()
-}
-
-function handleStackClick() {
-  // Clicking empty space - collapse all
-  currentZoomedIndex = null
-  getImages().forEach(img => img.classList.remove('zoomed'))
-  updateImagePositions()
-}
-
 function handleGlobalClick(event: MouseEvent) {
   const imageStack = getImageStack()
   if (!imageStack?.classList.contains('loaded')) {
@@ -329,19 +313,35 @@ function handleGlobalClick(event: MouseEvent) {
   }
 
   const target = event.target as HTMLElement
-  const clickedImage = target.closest('.image-item')
-  const clickedStack = target.closest('.image-stack')
+  const clickedImage = target.closest('.image-item') as HTMLImageElement
 
   if (clickedImage) {
-    handleImageClick(clickedImage as HTMLElement)
+    // Get clicked image state
+    const images = getImages()
+    const clickedIndex = images.indexOf(clickedImage)
+    const isZoomed = clickedImage.classList.contains('zoomed')
+
+    // Update center index and clear all zoom
+    currentCenterIndex = clickedIndex
+    getImages().forEach(img => img.classList.remove('zoomed'))
+
+    // Add zoom only if image isn't zoomed
+    if (!isZoomed) {
+      clickedImage.classList.add('zoomed')
+    }
+
+    updateImagePositions()
     return
   }
 
-  if (clickedStack) {
-    handleStackClick()
+  // Click on empty space - collapse all
+  if (target.closest('.image-stack')) {
+    getImages().forEach(img => img.classList.remove('zoomed'))
+    updateImagePositions()
   }
 }
 
+document.addEventListener('astro:before-swap', cleanupResources)
 document.addEventListener('astro:after-swap', () => setupStackLayout())
 window.addEventListener('resize', updateStackLayoutOnResize)
 document.addEventListener('click', handleGlobalClick)
