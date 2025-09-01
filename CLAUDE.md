@@ -67,3 +67,4 @@ The main feature in `src/pages/steps/3-scroll.astro` implements:
 - Use TypeScript strict mode for type safety
 - Apply performance optimizations for image-heavy interfaces
 - Follow ESLint configuration for consistent code style
+- No formal testing framework currently implemented
