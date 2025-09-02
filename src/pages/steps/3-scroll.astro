@@ -174,6 +174,7 @@ function getCachedLayoutConfig() {
   const width = window.innerWidth
   const height = window.innerHeight
 
+  // Use cached config for same viewport size
   if (cachedLayoutConfig
     && cachedLayoutConfig.width === width
     && cachedLayoutConfig.height === height) {
@@ -205,6 +206,7 @@ function getExpandedSpacingFactor() {
 function getCachedExpandedSpacingFactor() {
   const width = window.innerWidth
 
+  // Use cached spacing factor for same viewport width
   if (cachedSpacingFactor && cachedSpacingFactor.width === width) {
     return cachedSpacingFactor.result
   }
@@ -230,8 +232,11 @@ function applyImageSizeAndScale(size: number, scale: number) {
     return
   }
 
-  imageStack.style.setProperty('--image-size', `${size}px`)
-  imageStack.style.setProperty('--image-scale', scale.toString())
+  // Apply styles
+  Object.assign(imageStack.style, {
+    '--image-size': `${size}px`,
+    '--image-scale': scale.toString(),
+  })
 }
 
 function applyImageOffsets(spacing: number) {
@@ -285,8 +290,10 @@ function applyImageOffsets(spacing: number) {
     }
 
     // Apply styles
-    image.style.setProperty('--offset-x', `${offsetX}px`)
-    image.style.setProperty('--offset-y', `${offsetY}px`)
+    Object.assign(image.style, {
+      '--offset-x': `${offsetX}px`,
+      '--offset-y': `${offsetY}px`,
+    })
   })
 }
 
@@ -302,10 +309,12 @@ function setupStackLayout() {
 
   applyImageSizeAndScale(size, scale)
 
+  // Apply offsets after loading animation
   setTimeout(() => {
     applyImageOffsets(spacing)
   }, loadDelay)
 
+  // Add loaded to allow interaction
   setTimeout(() => {
     imageStack.classList.add('loaded')
   }, loadDelay + switchDuration)
@@ -333,8 +342,8 @@ function handleGlobalClick(event: MouseEvent) {
   const target = event.target as HTMLElement
   const clickedImage = target.closest('.image-item') as HTMLImageElement
 
+  // Click on image
   if (clickedImage) {
-    // Get clicked image state
     const images = getImages()
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
@@ -353,6 +362,7 @@ function handleGlobalClick(event: MouseEvent) {
     return
   }
 
+  // Click on empty space
   if (target.closest('.image-stack')) {
     getImages().forEach(img => img.classList.remove('zoomed'))
     updateImagePositions()
