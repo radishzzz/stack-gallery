@@ -233,9 +233,12 @@ function applyImageSizeAndScale(size: number, scale: number) {
   }
 
   // Apply styles
-  Object.assign(imageStack.style, {
+  const styles = {
     '--image-size': `${size}px`,
     '--image-scale': scale.toString(),
+  }
+  Object.entries(styles).forEach(([property, value]) => {
+    imageStack.style.setProperty(property, value)
   })
 }
 
@@ -290,9 +293,12 @@ function applyImageOffsets(spacing: number) {
     }
 
     // Apply styles
-    Object.assign(image.style, {
+    const styles = {
       '--offset-x': `${offsetX}px`,
       '--offset-y': `${offsetY}px`,
+    }
+    Object.entries(styles).forEach(([property, value]) => {
+      image.style.setProperty(property, value)
     })
   })
 }
