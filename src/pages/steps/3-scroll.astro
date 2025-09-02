@@ -401,7 +401,7 @@ function handleGlobalWheel(event: WheelEvent): void {
   event.preventDefault()
 
   const imageStack = getImageStack()
-  if (!imageStack) {
+  if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
   }
 
