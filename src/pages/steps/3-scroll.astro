@@ -108,17 +108,17 @@ let resizeTimer: number
 let cachedImageStack: HTMLElement | null = null
 let cachedImages: HTMLImageElement[] | null = null
 let currentCenterIndex: number | null = null
-let cachedLayoutMetrics: { width: number, height: number, result: ReturnType<typeof getLayoutMetrics> } | null = null
-let cachedOffsetScale: { width: number, result: number } | null = null
+let cachedLayoutConfig: { width: number, height: number, result: ReturnType<typeof getLayoutConfig> } | null = null
+let cachedSpacingFactor: { width: number, result: number } | null = null
 let scrollOffset = 0
 
-function cleanupResources() {
+function cleanup() {
   clearTimeout(resizeTimer)
   cachedImageStack = null
   cachedImages = null
   currentCenterIndex = null
-  cachedLayoutMetrics = null
-  cachedOffsetScale = null
+  cachedLayoutConfig = null
+  cachedSpacingFactor = null
   scrollOffset = 0
 }
 
@@ -152,46 +152,46 @@ function getImageScale(width: number) {
 }
 
 /**
- * Calculate spacing based on actual image display width
+ * Calculate stack spacing
  * 480px: 63px spacing (when image is 480px × 0.5 = 240px wide)
  * 1600px: 70px spacing (when image is 800px × 0.33 = 264px wide)
  */
-function getImageSpacing(size: number, scale: number) {
+function getStackSpacing(size: number, scale: number) {
   return size * scale * 63 / 240
 }
 
-function getLayoutMetrics() {
+function getLayoutConfig() {
   const width = window.innerWidth
   const height = window.innerHeight
   const size = getImageSize(width, height)
   const scale = getImageScale(width)
-  const spacing = getImageSpacing(size, scale)
+  const spacing = getStackSpacing(size, scale)
 
   return { size, scale, spacing }
 }
 
-function getCachedLayoutMetrics() {
+function getCachedLayoutConfig() {
   const width = window.innerWidth
   const height = window.innerHeight
 
-  if (cachedLayoutMetrics
-    && cachedLayoutMetrics.width === width
-    && cachedLayoutMetrics.height === height) {
-    return cachedLayoutMetrics.result
+  if (cachedLayoutConfig
+    && cachedLayoutConfig.width === width
+    && cachedLayoutConfig.height === height) {
+    return cachedLayoutConfig.result
   }
 
-  const result = getLayoutMetrics()
-  cachedLayoutMetrics = { width, height, result }
+  const result = getLayoutConfig()
+  cachedLayoutConfig = { width, height, result }
   return result
 }
 
 /**
- * Responsive additional offset scale
+ * Responsive expanded offset scale
  * <= 480px: 4.5
  * 480px - 1600px: Linear scale from 4.5 to 7
  * >= 1600px: 7
  */
-function getAdditionalOffsetScale() {
+function getExpandedSpacingFactor() {
   const viewportWidth = window.innerWidth
   const ratio = (viewportWidth - 480) / (1600 - 480)
 
@@ -202,15 +202,15 @@ function getAdditionalOffsetScale() {
       : 4.5 + (7 - 4.5) * ratio
 }
 
-function getCachedAdditionalOffsetScale() {
+function getCachedExpandedSpacingFactor() {
   const width = window.innerWidth
 
-  if (cachedOffsetScale && cachedOffsetScale.width === width) {
-    return cachedOffsetScale.result
+  if (cachedSpacingFactor && cachedSpacingFactor.width === width) {
+    return cachedSpacingFactor.result
   }
 
-  const result = getAdditionalOffsetScale()
-  cachedOffsetScale = { width, result }
+  const result = getExpandedSpacingFactor()
+  cachedSpacingFactor = { width, result }
   return result
 }
 
@@ -240,34 +240,48 @@ function applyImageOffsets(spacing: number) {
     return
   }
 
+  // Calculate center index
   const defaultCenterIndex = Math.floor(images.length / 2)
   const centerIndex = currentCenterIndex ?? defaultCenterIndex
+
+  // Check zoom state
+  const isZoomed = images[centerIndex]?.classList.contains('zoomed') || false
+
+  // Base spacing calculations
+  const baseSpacingX = spacing
+  const baseSpacingY = spacing * stackSlope
+
+  // Scroll offset calculations
+  const scrollOffsetX = scrollOffset
+  const scrollOffsetY = scrollOffset * stackSlope
+
+  // Calculate expanded offsets (if zoomed)
+  let expandedOffsetX = 0
+  let expandedOffsetY = 0
+  if (isZoomed) {
+    const expandedOffset = spacing * getCachedExpandedSpacingFactor()
+    expandedOffsetX = expandedOffset
+    expandedOffsetY = expandedOffset * stackSlope
+  }
 
   images.forEach((image, index) => {
     // Calculate base position
     const relativeIndex = centerIndex - index
-    let offsetX = relativeIndex * spacing
-    let offsetY = relativeIndex * spacing * stackSlope
+    let offsetX = scrollOffsetX + relativeIndex * baseSpacingX
+    let offsetY = scrollOffsetY + relativeIndex * baseSpacingY
 
-    // Apply scroll offset
-    offsetX += scrollOffset
-    offsetY += scrollOffset * stackSlope
-
-    // Apply additional offsets if the center image is zoomed
-    if (images[centerIndex]?.classList.contains('zoomed')) {
-      const additionalOffset = spacing * getCachedAdditionalOffsetScale()
-
+    // Apply expanded offsets for non-center images when zoomed
+    if (isZoomed) {
       if (index < centerIndex) {
         // Right group: move toward top-right
-        offsetX += additionalOffset
-        offsetY += additionalOffset * stackSlope
+        offsetX += expandedOffsetX
+        offsetY += expandedOffsetY
       }
       else if (index > centerIndex) {
         // Left group: move toward bottom-left
-        offsetX -= additionalOffset
-        offsetY -= additionalOffset * stackSlope
+        offsetX -= expandedOffsetX
+        offsetY -= expandedOffsetY
       }
-      // Center zoomed image stays at base position
     }
 
     // Apply styles
@@ -284,7 +298,7 @@ function setupStackLayout() {
   }
 
   currentCenterIndex = Math.floor(images.length / 2)
-  const { size, scale, spacing } = getCachedLayoutMetrics()
+  const { size, scale, spacing } = getCachedLayoutConfig()
 
   applyImageSizeAndScale(size, scale)
 
@@ -298,12 +312,12 @@ function setupStackLayout() {
 }
 
 function updateImagePositions() {
-  const { spacing } = getCachedLayoutMetrics()
+  const { spacing } = getCachedLayoutConfig()
   applyImageOffsets(spacing)
 }
 
 function updateStackLayout() {
-  const { size, scale, spacing } = getCachedLayoutMetrics()
+  const { size, scale, spacing } = getCachedLayoutConfig()
   applyImageSizeAndScale(size, scale)
   applyImageOffsets(spacing)
 }
@@ -358,11 +372,11 @@ function handleWheel(event: WheelEvent) {
   const delta = event.deltaY * scrollSensitivity
   scrollOffset += delta
 
-  const { spacing } = getCachedLayoutMetrics()
+  const { spacing } = getCachedLayoutConfig()
   applyImageOffsets(spacing)
 }
 
-document.addEventListener('astro:before-swap', cleanupResources)
+document.addEventListener('astro:before-swap', cleanup)
 document.addEventListener('astro:after-swap', () => setupStackLayout())
 document.addEventListener('click', handleGlobalClick)
 window.addEventListener('resize', updateStackLayoutOnResize)
