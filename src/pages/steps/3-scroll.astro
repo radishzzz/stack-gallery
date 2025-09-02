@@ -59,6 +59,9 @@ import Layout from '@/layouts/Layout.astro'
 
 <style>
 .image-stack {
+  --animation-duration: 0.8s;
+  --animation-easing: cubic-bezier(0.645, 0.045, 0.355, 1);
+
   /* Center child image */
   display: flex;
   align-items: center;
@@ -76,6 +79,10 @@ import Layout from '@/layouts/Layout.astro'
   --animation-duration: 0.6s;
 }
 
+.image-stack.scrolling {
+  --animation-easing: cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
 .image-item {
   /* Overlap all images */
   position: absolute;
@@ -86,7 +93,7 @@ import Layout from '@/layouts/Layout.astro'
 
   /* 3D perspective effect and scale */
   transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
-  transition: transform var(--animation-duration, 0.8s) cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition: transform var(--animation-duration) var(--animation-easing);
 
   /* Optimize performance */
   backface-visibility: hidden;
@@ -105,6 +112,7 @@ const switchDuration = 800
 const scrollSensitivity = 0.92
 
 let resizeTimer: number
+let scrollTimer: number | null = null
 let cachedImageStack: HTMLElement | null = null
 let cachedImages: HTMLImageElement[] | null = null
 let currentCenterIndex: number | null = null
@@ -112,8 +120,12 @@ let cachedLayoutConfig: { width: number, height: number, result: ReturnType<type
 let cachedSpacingFactor: { width: number, result: number } | null = null
 let scrollOffset = 0
 
-function cleanup() {
+function cleanup(): void {
   clearTimeout(resizeTimer)
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+
   cachedImageStack = null
   cachedImages = null
   currentCenterIndex = null
@@ -131,7 +143,7 @@ function cleanup() {
  * >= 1600px: 800px
  * Never exceeds 80dvh
  */
-function getImageSize(width: number, height: number) {
+function getImageSize(width: number, height: number): number {
   const size = width <= 480
     ? width
     : width >= 1600
@@ -147,7 +159,7 @@ function getImageSize(width: number, height: number) {
  * 480px - 1600px: Linear scale from 0.5 to 0.33
  * >= 1600px: 0.33
  */
-function getImageScale(width: number) {
+function getImageScale(width: number): number {
   return Math.max(0.33, Math.min(0.5, 0.5 - (width - 480) * 0.17 / 1120))
 }
 
@@ -156,11 +168,11 @@ function getImageScale(width: number) {
  * 480px: 63px spacing (when image is 480px × 0.5 = 240px wide)
  * 1600px: 70px spacing (when image is 800px × 0.33 = 264px wide)
  */
-function getStackSpacing(size: number, scale: number) {
+function getStackSpacing(size: number, scale: number): number {
   return size * scale * 63 / 240
 }
 
-function getLayoutConfig() {
+function getLayoutConfig(): { size: number, scale: number, spacing: number } {
   const width = window.innerWidth
   const height = window.innerHeight
   const size = getImageSize(width, height)
@@ -170,7 +182,7 @@ function getLayoutConfig() {
   return { size, scale, spacing }
 }
 
-function getCachedLayoutConfig() {
+function getCachedLayoutConfig(): { size: number, scale: number, spacing: number } {
   const width = window.innerWidth
   const height = window.innerHeight
 
@@ -192,7 +204,7 @@ function getCachedLayoutConfig() {
  * 480px - 1600px: Linear scale from 4.5 to 7
  * >= 1600px: 7
  */
-function getExpandedSpacingFactor() {
+function getExpandedSpacingFactor(): number {
   const viewportWidth = window.innerWidth
   const ratio = (viewportWidth - 480) / (1600 - 480)
 
@@ -203,7 +215,7 @@ function getExpandedSpacingFactor() {
       : 4.5 + (7 - 4.5) * ratio
 }
 
-function getCachedExpandedSpacingFactor() {
+function getCachedExpandedSpacingFactor(): number {
   const width = window.innerWidth
 
   // Use cached spacing factor for same viewport width
@@ -218,15 +230,15 @@ function getCachedExpandedSpacingFactor() {
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-function getImageStack() {
-  return cachedImageStack ??= document.querySelector('.image-stack') as HTMLElement
+function getImageStack(): HTMLElement | null {
+  return cachedImageStack ??= document.querySelector('.image-stack')
 }
 
-function getImages() {
-  return cachedImages ??= Array.from(document.querySelectorAll('.image-item')) as HTMLImageElement[]
+function getImages(): HTMLImageElement[] {
+  return cachedImages ??= Array.from(document.querySelectorAll('.image-item'))
 }
 
-function applyImageSizeAndScale(size: number, scale: number) {
+function applyImageSizeAndScale(size: number, scale: number): void {
   const imageStack = getImageStack()
   if (!imageStack) {
     return
@@ -242,7 +254,7 @@ function applyImageSizeAndScale(size: number, scale: number) {
   })
 }
 
-function applyImageOffsets(spacing: number) {
+function applyImageOffsets(spacing: number): void {
   const images = getImages()
   if (images.length === 0) {
     return
@@ -251,9 +263,12 @@ function applyImageOffsets(spacing: number) {
   // Calculate center index
   const defaultCenterIndex = Math.floor(images.length / 2)
   const centerIndex = currentCenterIndex ?? defaultCenterIndex
+  if (centerIndex < 0 || centerIndex >= images.length) {
+    return
+  }
 
   // Check zoom state
-  const isZoomed = images[centerIndex]?.classList.contains('zoomed') || false
+  const isZoomed = images[centerIndex].classList.contains('zoomed') || false
 
   // Base spacing calculations
   const baseSpacingX = spacing
@@ -303,7 +318,7 @@ function applyImageOffsets(spacing: number) {
   })
 }
 
-function setupStackLayout() {
+function setupStackLayout(): void {
   const imageStack = getImageStack()
   const images = getImages()
   if (!imageStack || images.length === 0) {
@@ -326,12 +341,12 @@ function setupStackLayout() {
   }, loadDelay + switchDuration)
 }
 
-function updateImagePositions() {
+function updateImagePositions(): void {
   const { spacing } = getCachedLayoutConfig()
   applyImageOffsets(spacing)
 }
 
-function updateStackLayout() {
+function updateStackLayout(): void {
   const { size, scale, spacing } = getCachedLayoutConfig()
   applyImageSizeAndScale(size, scale)
   applyImageOffsets(spacing)
@@ -339,9 +354,16 @@ function updateStackLayout() {
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-function handleGlobalClick(event: MouseEvent) {
+function updateStackLayoutOnResize(): void {
+  clearTimeout(resizeTimer)
+  resizeTimer = window.setTimeout(() => {
+    requestAnimationFrame(updateStackLayout)
+  }, 100)
+}
+
+function handleGlobalClick(event: MouseEvent): void {
   const imageStack = getImageStack()
-  if (!imageStack?.classList.contains('loaded')) {
+  if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
   }
 
@@ -354,7 +376,7 @@ function handleGlobalClick(event: MouseEvent) {
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
 
-    // Reset scroll offset, update center index and clear all zoom
+    // Reset scroll offset, update center index and clear all zoom state
     scrollOffset = 0
     currentCenterIndex = clickedIndex
     getImages().forEach(img => img.classList.remove('zoomed'))
@@ -375,18 +397,31 @@ function handleGlobalClick(event: MouseEvent) {
   }
 }
 
-function updateStackLayoutOnResize() {
-  clearTimeout(resizeTimer)
-  resizeTimer = window.setTimeout(() => {
-    requestAnimationFrame(updateStackLayout)
-  }, 100)
-}
-
-function handleWheel(event: WheelEvent) {
+function handleGlobalWheel(event: WheelEvent): void {
   event.preventDefault()
+
+  const imageStack = getImageStack()
+  if (!imageStack) {
+    return
+  }
 
   const delta = event.deltaY * scrollSensitivity
   scrollOffset += delta
+
+  // Add scrolling class and clear all zoom state
+  imageStack.classList.add('scrolling')
+  getImages().forEach(img => img.classList.remove('zoomed'))
+
+  // Clear existing timer
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+
+  // Set new timer to remove scrolling class
+  scrollTimer = window.setTimeout(() => {
+    imageStack.classList.remove('scrolling')
+    scrollTimer = null
+  }, 100)
 
   const { spacing } = getCachedLayoutConfig()
   applyImageOffsets(spacing)
@@ -394,8 +429,8 @@ function handleWheel(event: WheelEvent) {
 
 document.addEventListener('astro:before-swap', cleanup)
 document.addEventListener('astro:after-swap', () => setupStackLayout())
-document.addEventListener('click', handleGlobalClick)
 window.addEventListener('resize', updateStackLayoutOnResize)
-document.addEventListener('wheel', handleWheel, { passive: false })
+document.addEventListener('click', handleGlobalClick)
+document.addEventListener('wheel', handleGlobalWheel, { passive: false })
 setupStackLayout()
 </script>
