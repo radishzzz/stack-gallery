@@ -373,9 +373,13 @@ function handleClick(event: MouseEvent): void {
     return
   }
 
+  const images = getImages()
+  if (images.length === 0) {
+    return
+  }
+
   const target = event.target as HTMLElement
   const clickedImage = target.closest('.image-item') as HTMLImageElement
-  const images = getImages()
 
   // Click on image
   if (clickedImage) {
@@ -399,8 +403,8 @@ function handleClick(event: MouseEvent): void {
   }
 
   // Click on empty space
-  if (target.closest('.image-stack')) {
-    images.forEach(img => img.classList.remove('zoomed'))
+  if (target.closest('.image-stack') && currentCenterIndex !== null) {
+    images[currentCenterIndex].classList.remove('zoomed')
     updateStackLayout()
   }
 }
@@ -463,7 +467,10 @@ function handleWheel(event: WheelEvent): void {
   }
 
   const images = getImages()
-  if (currentCenterIndex === null || currentCenterIndex < 0 || currentCenterIndex >= images.length) {
+  if (images.length === 0
+    || currentCenterIndex === null
+    || currentCenterIndex < 0
+    || currentCenterIndex >= images.length) {
     return
   }
 
