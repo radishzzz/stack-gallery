@@ -54,6 +54,56 @@ import Layout from '@/layouts/Layout.astro'
     <img src="/48.webp" class="image-item" alt="image" />
     <img src="/49.webp" class="image-item" alt="image" />
     <img src="/50.webp" class="image-item" alt="image" />
+    <img src="/51.webp" class="image-item" alt="image" />
+    <img src="/52.webp" class="image-item" alt="image" />
+    <img src="/53.webp" class="image-item" alt="image" />
+    <img src="/54.webp" class="image-item" alt="image" />
+    <img src="/55.webp" class="image-item" alt="image" />
+    <img src="/56.webp" class="image-item" alt="image" />
+    <img src="/57.webp" class="image-item" alt="image" />
+    <img src="/58.webp" class="image-item" alt="image" />
+    <img src="/59.webp" class="image-item" alt="image" />
+    <img src="/60.webp" class="image-item" alt="image" />
+    <img src="/61.webp" class="image-item" alt="image" />
+    <img src="/62.webp" class="image-item" alt="image" />
+    <img src="/63.webp" class="image-item" alt="image" />
+    <img src="/64.webp" class="image-item" alt="image" />
+    <img src="/65.webp" class="image-item" alt="image" />
+    <img src="/66.webp" class="image-item" alt="image" />
+    <img src="/67.webp" class="image-item" alt="image" />
+    <img src="/68.webp" class="image-item" alt="image" />
+    <img src="/69.webp" class="image-item" alt="image" />
+    <img src="/70.webp" class="image-item" alt="image" />
+    <img src="/71.webp" class="image-item" alt="image" />
+    <img src="/72.webp" class="image-item" alt="image" />
+    <img src="/73.webp" class="image-item" alt="image" />
+    <img src="/74.webp" class="image-item" alt="image" />
+    <img src="/75.webp" class="image-item" alt="image" />
+    <img src="/76.webp" class="image-item" alt="image" />
+    <img src="/77.webp" class="image-item" alt="image" />
+    <img src="/78.webp" class="image-item" alt="image" />
+    <img src="/79.webp" class="image-item" alt="image" />
+    <img src="/80.webp" class="image-item" alt="image" />
+    <img src="/81.webp" class="image-item" alt="image" />
+    <img src="/82.webp" class="image-item" alt="image" />
+    <img src="/83.webp" class="image-item" alt="image" />
+    <img src="/84.webp" class="image-item" alt="image" />
+    <img src="/85.webp" class="image-item" alt="image" />
+    <img src="/86.webp" class="image-item" alt="image" />
+    <img src="/87.webp" class="image-item" alt="image" />
+    <img src="/88.webp" class="image-item" alt="image" />
+    <img src="/89.webp" class="image-item" alt="image" />
+    <img src="/90.webp" class="image-item" alt="image" />
+    <img src="/91.webp" class="image-item" alt="image" />
+    <img src="/92.webp" class="image-item" alt="image" />
+    <img src="/93.webp" class="image-item" alt="image" />
+    <img src="/94.webp" class="image-item" alt="image" />
+    <img src="/95.webp" class="image-item" alt="image" />
+    <img src="/96.webp" class="image-item" alt="image" />
+    <img src="/97.webp" class="image-item" alt="image" />
+    <img src="/98.webp" class="image-item" alt="image" />
+    <img src="/99.webp" class="image-item" alt="image" />
+    <img src="/100.webp" class="image-item" alt="image" />
   </div>
 </Layout>
 
@@ -367,6 +417,21 @@ function handleResize(): void {
   }, 100)
 }
 
+function switchToImage(newIndex: number, images: HTMLImageElement[], shouldZoom: boolean = true): void {
+  if (currentCenterIndex !== null) {
+    images[currentCenterIndex].classList.remove('zoomed')
+  }
+
+  stackScrollOffset = 0
+  currentCenterIndex = newIndex
+
+  if (shouldZoom) {
+    images[newIndex].classList.add('zoomed')
+  }
+
+  updateStackLayout()
+}
+
 function handleClick(event: MouseEvent): void {
   const imageStack = getImageStack()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
@@ -386,19 +451,7 @@ function handleClick(event: MouseEvent): void {
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
 
-    if (currentCenterIndex !== null) {
-      images[currentCenterIndex].classList.remove('zoomed')
-    }
-
-    stackScrollOffset = 0
-    currentCenterIndex = clickedIndex
-
-    // Add zoom only if image isn't zoomed
-    if (!isZoomed) {
-      clickedImage.classList.add('zoomed')
-    }
-
-    updateStackLayout()
+    switchToImage(clickedIndex, images, !isZoomed)
     return
   }
 
@@ -436,15 +489,7 @@ function handleWheelOnZoomed(event: WheelEvent, currentIndex: number, images: HT
     return
   }
 
-  if (currentCenterIndex !== null) {
-    images[currentCenterIndex].classList.remove('zoomed')
-  }
-
-  stackScrollOffset = 0
-  currentCenterIndex = nextIndex
-
-  images[nextIndex].classList.add('zoomed')
-  updateStackLayout()
+  switchToImage(nextIndex, images)
 
   lastImageSwitchTime = currentTime
   scrollAccumulator = 0
