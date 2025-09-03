@@ -419,16 +419,16 @@ function handleResize(): void {
   }, 100)
 }
 
-function switchToImage(newIndex: number, images: HTMLImageElement[], shouldZoom: boolean = true): void {
+function switchToNextImage(nextIndex: number, images: HTMLImageElement[], shouldZoom: boolean): void {
   if (currentCenterIndex !== null) {
     images[currentCenterIndex].classList.remove('zoomed')
   }
 
   stackScrollOffset = 0
-  currentCenterIndex = newIndex
+  currentCenterIndex = nextIndex
 
   if (shouldZoom) {
-    images[newIndex].classList.add('zoomed')
+    images[currentCenterIndex].classList.add('zoomed')
   }
 
   updateStackLayout()
@@ -453,7 +453,7 @@ function handleClick(event: MouseEvent): void {
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
 
-    switchToImage(clickedIndex, images, !isZoomed)
+    switchToNextImage(clickedIndex, images, !isZoomed)
     return
   }
 
@@ -487,11 +487,12 @@ function handleWheelOnZoomed(event: WheelEvent, currentIndex: number, images: HT
     ? Math.min(currentIndex + 1, images.length - 1)
     : Math.max(currentIndex - 1, 0)
 
+  // Prevent switching at boundary
   if (nextIndex === currentIndex) {
     return
   }
 
-  switchToImage(nextIndex, images)
+  switchToNextImage(nextIndex, images, true)
 
   lastImageSwitchTime = currentTime
   scrollAccumulator = 0
