@@ -107,9 +107,11 @@ import Layout from '@/layouts/Layout.astro'
 
 <script>
 const stackSlope = -0.6
-const loadDelay = 1000
+const loadDuration = 1000
 const switchDuration = 800
 const scrollDamping = 0.92
+const scrollThreshold = 50 // for zoomed state
+const scrollCooldown = 600 // for zoomed state
 
 let resizeTimer: number
 let scrollTimer: number | null = null
@@ -119,6 +121,8 @@ let currentCenterIndex: number | null = null
 let cachedLayoutConfig: { width: number, height: number, result: ReturnType<typeof getLayoutConfig> } | null = null
 let cachedSpacingFactor: { width: number, result: number } | null = null
 let stackScrollOffset = 0
+let scrollAccumulator = 0 // for zoomed state
+let lastImageSwitchTime = 0 // for zoomed state
 
 function cleanup(): void {
   clearTimeout(resizeTimer)
@@ -132,6 +136,8 @@ function cleanup(): void {
   cachedLayoutConfig = null
   cachedSpacingFactor = null
   stackScrollOffset = 0
+  scrollAccumulator = 0
+  lastImageSwitchTime = 0
 }
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -333,12 +339,12 @@ function setupStackLayout(): void {
   // Apply offsets after loading animation
   setTimeout(() => {
     applyImageOffsets(spacing)
-  }, loadDelay)
+  }, loadDuration)
 
   // Add loaded to allow interaction
   setTimeout(() => {
     imageStack.classList.add('loaded')
-  }, loadDelay + switchDuration)
+  }, loadDuration + switchDuration)
 }
 
 function updateStackLayout(): void {
@@ -354,14 +360,14 @@ function updateStackLayoutOnResize(): void {
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-function handleGlobalResize(): void {
+function handleResize(): void {
   clearTimeout(resizeTimer)
   resizeTimer = window.setTimeout(() => {
     requestAnimationFrame(updateStackLayoutOnResize)
   }, 100)
 }
 
-function handleGlobalClick(event: MouseEvent): void {
+function handleClick(event: MouseEvent): void {
   const imageStack = getImageStack()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
@@ -369,17 +375,19 @@ function handleGlobalClick(event: MouseEvent): void {
 
   const target = event.target as HTMLElement
   const clickedImage = target.closest('.image-item') as HTMLImageElement
+  const images = getImages()
 
   // Click on image
   if (clickedImage) {
-    const images = getImages()
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
 
-    // Reset scroll offset, update center index and clear all zoom state
+    if (currentCenterIndex !== null) {
+      images[currentCenterIndex].classList.remove('zoomed')
+    }
+
     stackScrollOffset = 0
     currentCenterIndex = clickedIndex
-    getImages().forEach(img => img.classList.remove('zoomed'))
 
     // Add zoom only if image isn't zoomed
     if (!isZoomed) {
@@ -392,49 +400,46 @@ function handleGlobalClick(event: MouseEvent): void {
 
   // Click on empty space
   if (target.closest('.image-stack')) {
-    getImages().forEach(img => img.classList.remove('zoomed'))
+    images.forEach(img => img.classList.remove('zoomed'))
     updateStackLayout()
   }
 }
 
-function handleGlobalWheel(event: WheelEvent): void {
-  event.preventDefault()
+function handleWheelOnZoomed(event: WheelEvent, currentIndex: number, images: HTMLImageElement[]): void {
+  const currentTime = Date.now()
 
-  const imageStack = getImageStack()
-  if (!imageStack || !imageStack.classList.contains('loaded')) {
+  if (currentTime - lastImageSwitchTime < scrollCooldown) {
     return
   }
 
-  const images = getImages()
-  if (currentCenterIndex === null || currentCenterIndex < 0 || currentCenterIndex >= images.length) {
-    return
-  }
-  const isZoomed = images[currentCenterIndex].classList.contains('zoomed') || false
+  const delta = event.deltaY
+  scrollAccumulator += delta
 
-  if (isZoomed) {
-    const currentIndex = currentCenterIndex
-    const delta = event.deltaY
-
-    const nextIndex = delta > 0
+  if (Math.abs(scrollAccumulator) >= scrollThreshold) {
+    const nextIndex = scrollAccumulator > 0
       ? Math.min(currentIndex + 1, images.length - 1)
       : Math.max(currentIndex - 1, 0)
 
-    if (nextIndex !== currentIndex) {
-      // Reset scroll offset, update center index and clear all zoom state
-      stackScrollOffset = 0
-      currentCenterIndex = nextIndex
-      getImages().forEach(img => img.classList.remove('zoomed'))
-      images[nextIndex].classList.add('zoomed')
-      updateStackLayout()
+    if (nextIndex === currentIndex) {
+      return
     }
 
-    return
+    if (currentCenterIndex !== null) {
+      images[currentCenterIndex].classList.remove('zoomed')
+    }
+
+    stackScrollOffset = 0
+    currentCenterIndex = nextIndex
+
+    images[nextIndex].classList.add('zoomed')
+    updateStackLayout()
+
+    lastImageSwitchTime = currentTime
+    scrollAccumulator = 0
   }
+}
 
-  const delta = event.deltaY * scrollDamping
-  stackScrollOffset += delta
-
-  // Add scrolling class
+function setTemporaryScrollingState(imageStack: HTMLElement): void {
   imageStack.classList.add('scrolling')
 
   // Clear existing timer
@@ -447,15 +452,42 @@ function handleGlobalWheel(event: WheelEvent): void {
     imageStack.classList.remove('scrolling')
     scrollTimer = null
   }, 100)
+}
 
+function handleWheel(event: WheelEvent): void {
+  event.preventDefault()
+
+  const imageStack = getImageStack()
+  if (!imageStack || !imageStack.classList.contains('loaded')) {
+    return
+  }
+
+  const images = getImages()
+  if (currentCenterIndex === null || currentCenterIndex < 0 || currentCenterIndex >= images.length) {
+    return
+  }
+
+  // Zoomed: wheel to switch images
+  const isZoomed = images[currentCenterIndex].classList.contains('zoomed') || false
+  if (isZoomed) {
+    handleWheelOnZoomed(event, currentCenterIndex, images)
+    return
+  }
+
+  // Normal: wheel to scroll stack
   const { spacing } = getCachedLayoutConfig()
+  setTemporaryScrollingState(imageStack)
+
+  const delta = event.deltaY * scrollDamping
+  stackScrollOffset += delta
+
   applyImageOffsets(spacing)
 }
 
 document.addEventListener('astro:before-swap', cleanup)
 document.addEventListener('astro:after-swap', () => setupStackLayout())
-window.addEventListener('resize', handleGlobalResize)
-document.addEventListener('click', handleGlobalClick)
-document.addEventListener('wheel', handleGlobalWheel, { passive: false })
+window.addEventListener('resize', handleResize)
+document.addEventListener('click', handleClick)
+document.addEventListener('wheel', handleWheel, { passive: false })
 setupStackLayout()
 </script>
