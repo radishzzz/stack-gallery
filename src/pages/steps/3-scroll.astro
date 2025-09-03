@@ -173,6 +173,7 @@ let cachedSpacingFactor: { width: number, result: number } | null = null
 let stackScrollOffset = 0
 let scrollAccumulator = 0 // for zoomed state
 let lastImageSwitchTime = 0 // for zoomed state
+let isWheeling = false
 
 function cleanup(): void {
   clearTimeout(resizeTimer)
@@ -188,6 +189,7 @@ function cleanup(): void {
   stackScrollOffset = 0
   scrollAccumulator = 0
   lastImageSwitchTime = 0
+  isWheeling = false
 }
 
 // Responsive calculation >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -534,6 +536,11 @@ function handleWheel(event: WheelEvent): void {
     return
   }
 
+  // Prevent rapid wheel events
+  if (isWheeling) {
+    return
+  }
+
   // Normal: wheel to scroll stack
   const { spacing } = getCachedLayoutConfig()
   flashScrollingState(imageStack)
@@ -541,7 +548,11 @@ function handleWheel(event: WheelEvent): void {
   const delta = event.deltaY * scrollDamping
   stackScrollOffset += delta
 
-  applyImageOffsets(spacing)
+  isWheeling = true
+  requestAnimationFrame(() => {
+    applyImageOffsets(spacing)
+    isWheeling = false
+  })
 }
 
 document.addEventListener('astro:before-swap', cleanup)
