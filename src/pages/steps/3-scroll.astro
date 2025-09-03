@@ -509,7 +509,7 @@ function flashScrollingState(imageStack: HTMLElement): void {
   scrollTimer = window.setTimeout(() => {
     imageStack.classList.remove('scrolling')
     scrollTimer = null
-  }, 100)
+  }, 400)
 }
 
 function handleWheel(event: WheelEvent): void {
