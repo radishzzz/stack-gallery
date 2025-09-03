@@ -142,7 +142,7 @@ import Layout from '@/layouts/Layout.astro'
   max-height: var(--image-size);
 
   /* 3D perspective effect and scale */
-  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
+  transform: translate3d(var(--offset-x, 0px), var(--offset-y, 0px), 0px) perspective(none) rotateX(-45deg) rotateY(-45deg) scale(var(--image-scale));
   transition: transform var(--animation-duration) var(--animation-easing);
 
   /* Optimize performance */
@@ -151,7 +151,7 @@ import Layout from '@/layouts/Layout.astro'
 }
 
 .image-stack.loaded .image-item.zoomed {
-  transform: translate3d(var(--offset-x, 0), var(--offset-y, 0), 0) perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
+  transform: translate3d(var(--offset-x, 0px), var(--offset-y, 0px), 0px) perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
 }
 </style>
 
