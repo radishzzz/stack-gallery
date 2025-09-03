@@ -140,7 +140,7 @@ function cleanup(): void {
   lastImageSwitchTime = 0
 }
 
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// Responsive calculation >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 /**
  * Responsive image size
@@ -234,7 +234,7 @@ function getCachedExpandedSpacingFactor(): number {
   return result
 }
 
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// Control Stack Layout >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 function getImageStack(): HTMLElement | null {
   return cachedImageStack ??= document.querySelector('.image-stack')
@@ -358,7 +358,7 @@ function updateStackLayoutOnResize(): void {
   applyImageOffsets(spacing)
 }
 
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// Resize and Click Event >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 function handleResize(): void {
   clearTimeout(resizeTimer)
@@ -409,41 +409,48 @@ function handleClick(event: MouseEvent): void {
   }
 }
 
+// Wheel Event >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 function handleWheelOnZoomed(event: WheelEvent, currentIndex: number, images: HTMLImageElement[]): void {
   const currentTime = Date.now()
 
+  // Prevent rapid scrolling
   if (currentTime - lastImageSwitchTime < scrollCooldown) {
     return
   }
 
+  // Accumulate scroll distance
   const delta = event.deltaY
   scrollAccumulator += delta
 
-  if (Math.abs(scrollAccumulator) >= scrollThreshold) {
-    const nextIndex = scrollAccumulator > 0
-      ? Math.min(currentIndex + 1, images.length - 1)
-      : Math.max(currentIndex - 1, 0)
-
-    if (nextIndex === currentIndex) {
-      return
-    }
-
-    if (currentCenterIndex !== null) {
-      images[currentCenterIndex].classList.remove('zoomed')
-    }
-
-    stackScrollOffset = 0
-    currentCenterIndex = nextIndex
-
-    images[nextIndex].classList.add('zoomed')
-    updateStackLayout()
-
-    lastImageSwitchTime = currentTime
-    scrollAccumulator = 0
+  // Ignore small scroll movements
+  if (Math.abs(scrollAccumulator) < scrollThreshold) {
+    return
   }
+
+  const nextIndex = scrollAccumulator > 0
+    ? Math.min(currentIndex + 1, images.length - 1)
+    : Math.max(currentIndex - 1, 0)
+
+  if (nextIndex === currentIndex) {
+    return
+  }
+
+  if (currentCenterIndex !== null) {
+    images[currentCenterIndex].classList.remove('zoomed')
+  }
+
+  stackScrollOffset = 0
+  currentCenterIndex = nextIndex
+
+  images[nextIndex].classList.add('zoomed')
+  updateStackLayout()
+
+  lastImageSwitchTime = currentTime
+  scrollAccumulator = 0
 }
 
-function setTemporaryScrollingState(imageStack: HTMLElement): void {
+function flashScrollingState(imageStack: HTMLElement): void {
   imageStack.classList.add('scrolling')
 
   // Clear existing timer
@@ -466,6 +473,7 @@ function handleWheel(event: WheelEvent): void {
     return
   }
 
+  // Check if valid images and center index
   const images = getImages()
   if (images.length === 0
     || currentCenterIndex === null
@@ -483,7 +491,7 @@ function handleWheel(event: WheelEvent): void {
 
   // Normal: wheel to scroll stack
   const { spacing } = getCachedLayoutConfig()
-  setTemporaryScrollingState(imageStack)
+  flashScrollingState(imageStack)
 
   const delta = event.deltaY * scrollDamping
   stackScrollOffset += delta
