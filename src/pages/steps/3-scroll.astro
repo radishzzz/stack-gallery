@@ -118,7 +118,7 @@ let cachedImages: HTMLImageElement[] | null = null
 let currentCenterIndex: number | null = null
 let cachedLayoutConfig: { width: number, height: number, result: ReturnType<typeof getLayoutConfig> } | null = null
 let cachedSpacingFactor: { width: number, result: number } | null = null
-let scrollOffset = 0
+let stackScrollOffset = 0
 
 function cleanup(): void {
   clearTimeout(resizeTimer)
@@ -131,7 +131,7 @@ function cleanup(): void {
   currentCenterIndex = null
   cachedLayoutConfig = null
   cachedSpacingFactor = null
-  scrollOffset = 0
+  stackScrollOffset = 0
 }
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -275,8 +275,8 @@ function applyImageOffsets(spacing: number): void {
   const baseSpacingY = spacing * stackSlope
 
   // Scroll offset calculations
-  const scrollOffsetX = scrollOffset
-  const scrollOffsetY = scrollOffset * stackSlope
+  const stackScrollOffsetX = stackScrollOffset
+  const stackScrollOffsetY = stackScrollOffset * stackSlope
 
   // Calculate expanded offsets (if zoomed)
   let expandedOffsetX = 0
@@ -290,8 +290,8 @@ function applyImageOffsets(spacing: number): void {
   images.forEach((image, index) => {
     // Calculate base position
     const relativeIndex = centerIndex - index
-    let offsetX = scrollOffsetX + baseSpacingX * relativeIndex
-    let offsetY = scrollOffsetY + baseSpacingY * relativeIndex
+    let offsetX = stackScrollOffsetX + baseSpacingX * relativeIndex
+    let offsetY = stackScrollOffsetY + baseSpacingY * relativeIndex
 
     // Apply expanded offsets for non-center images when zoomed
     if (isZoomed) {
@@ -377,7 +377,7 @@ function handleGlobalClick(event: MouseEvent): void {
     const isZoomed = clickedImage.classList.contains('zoomed')
 
     // Reset scroll offset, update center index and clear all zoom state
-    scrollOffset = 0
+    stackScrollOffset = 0
     currentCenterIndex = clickedIndex
     getImages().forEach(img => img.classList.remove('zoomed'))
 
@@ -405,12 +405,37 @@ function handleGlobalWheel(event: WheelEvent): void {
     return
   }
 
-  const delta = event.deltaY * scrollDamping
-  scrollOffset += delta
+  const images = getImages()
+  if (currentCenterIndex === null || currentCenterIndex < 0 || currentCenterIndex >= images.length) {
+    return
+  }
+  const isZoomed = images[currentCenterIndex].classList.contains('zoomed') || false
 
-  // Add scrolling class and clear all zoom state
+  if (isZoomed) {
+    const currentIndex = currentCenterIndex
+    const delta = event.deltaY
+
+    const nextIndex = delta > 0
+      ? Math.min(currentIndex + 1, images.length - 1)
+      : Math.max(currentIndex - 1, 0)
+
+    if (nextIndex !== currentIndex) {
+      // Reset scroll offset, update center index and clear all zoom state
+      stackScrollOffset = 0
+      currentCenterIndex = nextIndex
+      getImages().forEach(img => img.classList.remove('zoomed'))
+      images[nextIndex].classList.add('zoomed')
+      updateStackLayout()
+    }
+
+    return
+  }
+
+  const delta = event.deltaY * scrollDamping
+  stackScrollOffset += delta
+
+  // Add scrolling class
   imageStack.classList.add('scrolling')
-  getImages().forEach(img => img.classList.remove('zoomed'))
 
   // Clear existing timer
   if (scrollTimer) {
