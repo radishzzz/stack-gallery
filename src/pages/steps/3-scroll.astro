@@ -109,7 +109,7 @@ import Layout from '@/layouts/Layout.astro'
 const stackSlope = -0.6
 const loadDelay = 1000
 const switchDuration = 800
-const scrollSensitivity = 0.92
+const scrollDamping = 0.92
 
 let resizeTimer: number
 let scrollTimer: number | null = null
@@ -290,8 +290,8 @@ function applyImageOffsets(spacing: number): void {
   images.forEach((image, index) => {
     // Calculate base position
     const relativeIndex = centerIndex - index
-    let offsetX = scrollOffsetX + relativeIndex * baseSpacingX
-    let offsetY = scrollOffsetY + relativeIndex * baseSpacingY
+    let offsetX = scrollOffsetX + baseSpacingX * relativeIndex
+    let offsetY = scrollOffsetY + baseSpacingY * relativeIndex
 
     // Apply expanded offsets for non-center images when zoomed
     if (isZoomed) {
@@ -341,12 +341,12 @@ function setupStackLayout(): void {
   }, loadDelay + switchDuration)
 }
 
-function updateImagePositions(): void {
+function updateStackLayout(): void {
   const { spacing } = getCachedLayoutConfig()
   applyImageOffsets(spacing)
 }
 
-function updateStackLayout(): void {
+function updateStackLayoutOnResize(): void {
   const { size, scale, spacing } = getCachedLayoutConfig()
   applyImageSizeAndScale(size, scale)
   applyImageOffsets(spacing)
@@ -354,10 +354,10 @@ function updateStackLayout(): void {
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-function updateStackLayoutOnResize(): void {
+function handleGlobalResize(): void {
   clearTimeout(resizeTimer)
   resizeTimer = window.setTimeout(() => {
-    requestAnimationFrame(updateStackLayout)
+    requestAnimationFrame(updateStackLayoutOnResize)
   }, 100)
 }
 
@@ -386,14 +386,14 @@ function handleGlobalClick(event: MouseEvent): void {
       clickedImage.classList.add('zoomed')
     }
 
-    updateImagePositions()
+    updateStackLayout()
     return
   }
 
   // Click on empty space
   if (target.closest('.image-stack')) {
     getImages().forEach(img => img.classList.remove('zoomed'))
-    updateImagePositions()
+    updateStackLayout()
   }
 }
 
@@ -405,7 +405,7 @@ function handleGlobalWheel(event: WheelEvent): void {
     return
   }
 
-  const delta = event.deltaY * scrollSensitivity
+  const delta = event.deltaY * scrollDamping
   scrollOffset += delta
 
   // Add scrolling class and clear all zoom state
@@ -429,7 +429,7 @@ function handleGlobalWheel(event: WheelEvent): void {
 
 document.addEventListener('astro:before-swap', cleanup)
 document.addEventListener('astro:after-swap', () => setupStackLayout())
-window.addEventListener('resize', updateStackLayoutOnResize)
+window.addEventListener('resize', handleGlobalResize)
 document.addEventListener('click', handleGlobalClick)
 document.addEventListener('wheel', handleGlobalWheel, { passive: false })
 setupStackLayout()
