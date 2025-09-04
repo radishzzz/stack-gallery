@@ -160,8 +160,8 @@ const stackSlope = -0.6
 const loadDuration = 1000
 const switchDuration = 800
 const scrollDamping = 0.92
-const scrollThreshold = 50 // for zoomed state
-const scrollCooldown = 600 // for zoomed state
+const scrollThreshold = 50
+const switchCooldown = 600
 
 let resizeTimer: number
 let scrollTimer: number | null = null
@@ -171,8 +171,8 @@ let currentCenterIndex: number | null = null
 let cachedLayoutConfig: { width: number, height: number, result: ReturnType<typeof getLayoutConfig> } | null = null
 let cachedSpacingFactor: { width: number, result: number } | null = null
 let stackScrollOffset = 0
-let scrollAccumulator = 0 // for zoomed state
-let lastImageSwitchTime = 0 // for zoomed state
+let scrollAccumulator = 0
+let lastImageSwitchTime = 0
 let isWheeling = false
 
 function cleanup(): void {
@@ -326,7 +326,7 @@ function applyImageOffsets(spacing: number): void {
   }
 
   // Check zoom state
-  const isZoomed = images[centerIndex].classList.contains('zoomed') || false
+  const isZoomed = images[centerIndex].classList.contains('zoomed')
 
   // Base spacing calculations
   const baseSpacingX = spacing
@@ -410,8 +410,11 @@ function updateStackLayoutOnResize(): void {
   applyImageOffsets(spacing)
 }
 
-// Resize and Click Event >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// ==========================================================================================================================================================
+// EVENT HANDLERS
+// ==========================================================================================================================================================
 
+// --- Resize Events ---
 function handleResize(): void {
   clearTimeout(resizeTimer)
   resizeTimer = window.setTimeout(() => {
@@ -434,6 +437,48 @@ function switchToNextImage(nextIndex: number, images: HTMLImageElement[], should
   updateStackLayout()
 }
 
+// --- Keyboard Events ---
+function handleKeyDown(event: KeyboardEvent): void {
+  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+    return
+  }
+
+  const currentTime = Date.now()
+  if (currentTime - lastImageSwitchTime < switchCooldown) {
+    return
+  }
+
+  const imageStack = getImageStack()
+  if (!imageStack || !imageStack.classList.contains('loaded')) {
+    return
+  }
+
+  const images = getImages()
+  if (images.length === 0
+    || currentCenterIndex === null
+    || currentCenterIndex < 0
+    || currentCenterIndex >= images.length) {
+    return
+  }
+
+  event.preventDefault()
+
+  const isZoomed = images[currentCenterIndex].classList.contains('zoomed')
+
+  const nextIndex = event.key === 'ArrowRight'
+    ? Math.min(currentCenterIndex + 1, images.length - 1)
+    : Math.max(currentCenterIndex - 1, 0)
+
+  // Prevent switching at boundary
+  if (nextIndex === currentCenterIndex) {
+    return
+  }
+
+  switchToNextImage(nextIndex, images, isZoomed)
+  lastImageSwitchTime = currentTime
+}
+
+// --- Click Events ---
 function handleClick(event: MouseEvent): void {
   const imageStack = getImageStack()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
@@ -464,13 +509,12 @@ function handleClick(event: MouseEvent): void {
   }
 }
 
-// Wheel Event >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-function handleWheelOnZoomed(event: WheelEvent, currentIndex: number, images: HTMLImageElement[]): void {
+// --- Wheel Events ---
+function handleWheelOnZoomed(event: WheelEvent, currentCenterIndex: number, images: HTMLImageElement[]): void {
   const currentTime = Date.now()
 
   // Prevent rapid scrolling
-  if (currentTime - lastImageSwitchTime < scrollCooldown) {
+  if (currentTime - lastImageSwitchTime < switchCooldown) {
     return
   }
 
@@ -484,11 +528,11 @@ function handleWheelOnZoomed(event: WheelEvent, currentIndex: number, images: HT
   }
 
   const nextIndex = scrollAccumulator > 0
-    ? Math.min(currentIndex + 1, images.length - 1)
-    : Math.max(currentIndex - 1, 0)
+    ? Math.min(currentCenterIndex + 1, images.length - 1)
+    : Math.max(currentCenterIndex - 1, 0)
 
   // Prevent switching at boundary
-  if (nextIndex === currentIndex) {
+  if (nextIndex === currentCenterIndex) {
     return
   }
 
@@ -498,19 +542,33 @@ function handleWheelOnZoomed(event: WheelEvent, currentIndex: number, images: HT
   scrollAccumulator = 0
 }
 
-function flashScrollingState(imageStack: HTMLElement): void {
+function handleWheelOnNormal(imageStack: HTMLElement, event: WheelEvent): void {
+  // Prevent rapid wheel events
+  if (isWheeling) {
+    return
+  }
+  isWheeling = true
+
+  const { spacing } = getCachedLayoutConfig()
+  const delta = event.deltaY * scrollDamping
+  stackScrollOffset += delta
+
   imageStack.classList.add('scrolling')
 
-  // Clear existing timer
+  // Clear existing timer and set new
   if (scrollTimer) {
     clearTimeout(scrollTimer)
   }
 
-  // Set new timer to remove scrolling class
   scrollTimer = window.setTimeout(() => {
     imageStack.classList.remove('scrolling')
     scrollTimer = null
   }, 400)
+
+  requestAnimationFrame(() => {
+    applyImageOffsets(spacing)
+    isWheeling = false
+  })
 }
 
 function handleWheel(event: WheelEvent): void {
@@ -531,34 +589,19 @@ function handleWheel(event: WheelEvent): void {
   }
 
   // Zoomed: wheel to switch images
-  const isZoomed = images[currentCenterIndex].classList.contains('zoomed') || false
+  const isZoomed = images[currentCenterIndex].classList.contains('zoomed')
   if (isZoomed) {
     handleWheelOnZoomed(event, currentCenterIndex, images)
     return
   }
 
-  // Prevent rapid wheel events
-  if (isWheeling) {
-    return
-  }
-
-  // Normal: wheel to scroll stack
-  const { spacing } = getCachedLayoutConfig()
-  flashScrollingState(imageStack)
-
-  const delta = event.deltaY * scrollDamping
-  stackScrollOffset += delta
-
-  isWheeling = true
-  requestAnimationFrame(() => {
-    applyImageOffsets(spacing)
-    isWheeling = false
-  })
+  handleWheelOnNormal(imageStack, event)
 }
 
 document.addEventListener('astro:before-swap', cleanup)
 document.addEventListener('astro:after-swap', () => setupStackLayout())
 window.addEventListener('resize', handleResize)
+document.addEventListener('keydown', handleKeyDown)
 document.addEventListener('click', handleClick)
 document.addEventListener('wheel', handleWheel, { passive: false })
 setupStackLayout()
