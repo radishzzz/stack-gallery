@@ -414,7 +414,7 @@ function updateStackLayoutOnResize(): void {
 // EVENT HANDLERS
 // ==========================================================================================================================================================
 
-function flashScrollingState(imageStack: HTMLElement, duration: number = 400): void {
+function flashScrollingState(imageStack: HTMLElement): void {
   imageStack.classList.add('scrolling')
 
   // Clear existing timer
@@ -426,7 +426,7 @@ function flashScrollingState(imageStack: HTMLElement, duration: number = 400): v
   scrollTimer = window.setTimeout(() => {
     imageStack.classList.remove('scrolling')
     scrollTimer = null
-  }, duration)
+  }, 400)
 }
 
 function switchToNextImage(images: HTMLImageElement[], nextIndex: number, shouldZoom: boolean): void {
@@ -514,6 +514,7 @@ function handleKeyDown(event: KeyboardEvent): void {
       handleArrowKeys(event, currentCenterIndex, imageStack, images, isZoomed, currentTime)
       break
     case ' ':
+      imageStack.classList.remove('scrolling')
       images[currentCenterIndex].classList.toggle('zoomed')
       updateStackLayout()
       break
