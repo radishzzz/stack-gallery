@@ -461,14 +461,17 @@ function handleKeyDown(event: KeyboardEvent): void {
   }
 
   const imageStack = getImageStack()
-  const images = getImages()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
   }
 
+  const images = getImages()
+  if (images.length === 0) {
+    return
+  }
+
   // Check if valid center index
-  if (images.length === 0
-    || currentCenterIndex === null
+  if (currentCenterIndex === null
     || currentCenterIndex < 0
     || currentCenterIndex >= images.length) {
     return
@@ -589,14 +592,17 @@ function handleWheelOnNormal(imageStack: HTMLElement, event: WheelEvent): void {
 
 function handleWheel(event: WheelEvent): void {
   const imageStack = getImageStack()
-  const images = getImages()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
   }
 
+  const images = getImages()
+  if (images.length === 0) {
+    return
+  }
+
   // Check if valid center index
-  if (images.length === 0
-    || currentCenterIndex === null
+  if (currentCenterIndex === null
     || currentCenterIndex < 0
     || currentCenterIndex >= images.length) {
     return
