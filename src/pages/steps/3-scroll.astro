@@ -513,17 +513,9 @@ function handleKeyDown(event: KeyboardEvent): void {
     case 'ArrowRight':
       handleArrowKeys(event, currentCenterIndex, imageStack, images, isZoomed, currentTime)
       break
-    case 'Escape':
-      if (isZoomed) {
-        images[currentCenterIndex!].classList.remove('zoomed')
-        updateStackLayout()
-      }
-      break
     case ' ':
-      if (!isZoomed) {
-        images[currentCenterIndex!].classList.add('zoomed')
-        updateStackLayout()
-      }
+      images[currentCenterIndex].classList.toggle('zoomed')
+      updateStackLayout()
       break
   }
 }
