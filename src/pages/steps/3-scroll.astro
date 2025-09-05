@@ -192,7 +192,9 @@ function cleanup(): void {
   isWheeling = false
 }
 
-// Responsive calculation >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// ==========================================================================================================================================================
+// Responsive Calculation
+// ==========================================================================================================================================================
 
 /**
  * Responsive image size
@@ -286,7 +288,9 @@ function getCachedExpandedSpacingFactor(): number {
   return result
 }
 
-// Control Stack Layout >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// ==========================================================================================================================================================
+// Stack Layout
+// ==========================================================================================================================================================
 
 function getImageStack(): HTMLElement | null {
   return cachedImageStack ??= document.querySelector('.image-stack')
@@ -296,13 +300,14 @@ function getImages(): HTMLImageElement[] {
   return cachedImages ??= Array.from(document.querySelectorAll('.image-item'))
 }
 
+// --- Apply styles / offsets ---
 function applyImageSizeAndScale(size: number, scale: number): void {
   const imageStack = getImageStack()
   if (!imageStack) {
     return
   }
 
-  // Apply styles
+  // Apply size and scale
   const styles = {
     '--image-size': `${size}px`,
     '--image-scale': scale.toString(),
@@ -376,6 +381,7 @@ function applyImageOffsets(spacing: number): void {
   })
 }
 
+// --- Setup / Update Stack Layout ---
 function setupStackLayout(): void {
   const imageStack = getImageStack()
   const images = getImages()
