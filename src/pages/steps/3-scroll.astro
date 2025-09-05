@@ -429,7 +429,7 @@ function flashScrollingState(imageStack: HTMLElement, duration: number = 400): v
   }, duration)
 }
 
-function switchToNextImage(nextIndex: number, images: HTMLImageElement[], shouldZoom: boolean): void {
+function switchToNextImage(images: HTMLImageElement[], nextIndex: number, shouldZoom: boolean): void {
   if (currentCenterIndex !== null) {
     images[currentCenterIndex].classList.remove('zoomed')
   }
@@ -454,12 +454,39 @@ function handleResize(): void {
 }
 
 // --- Keyboard Events ---
-function handleKeyDown(event: KeyboardEvent): void {
-  // Prevent non-arrow key events
-  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+function handleArrowKeys(
+  event: KeyboardEvent,
+  currentIndex: number,
+  imageStack: HTMLElement,
+  images: HTMLImageElement[],
+  isZoomed: boolean,
+  currentTime: number,
+): void {
+  // Zoomed: add switch cooldown
+  if (isZoomed && (currentTime - lastSwitchTime < switchCooldown)) {
     return
   }
 
+  // Normal: add scrolling state
+  if (!isZoomed) {
+    flashScrollingState(imageStack)
+  }
+
+  const nextIndex = event.key === 'ArrowRight'
+    ? Math.min(currentIndex + 1, images.length - 1)
+    : Math.max(currentIndex - 1, 0)
+
+  // Prevent switching at boundary
+  if (nextIndex === currentIndex) {
+    return
+  }
+
+  event.preventDefault()
+  switchToNextImage(images, nextIndex, isZoomed)
+  lastSwitchTime = currentTime
+}
+
+function handleKeyDown(event: KeyboardEvent): void {
   const imageStack = getImageStack()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
@@ -480,28 +507,25 @@ function handleKeyDown(event: KeyboardEvent): void {
   const isZoomed = images[currentCenterIndex].classList.contains('zoomed')
   const currentTime = Date.now()
 
-  // Zoomed: keyboard navigation with switch cooldown
-  if (isZoomed && (currentTime - lastSwitchTime < switchCooldown)) {
-    return
+  // Separate handling based on key type
+  switch (event.key) {
+    case 'ArrowLeft':
+    case 'ArrowRight':
+      handleArrowKeys(event, currentCenterIndex, imageStack, images, isZoomed, currentTime)
+      break
+    case 'Escape':
+      if (isZoomed) {
+        images[currentCenterIndex!].classList.remove('zoomed')
+        updateStackLayout()
+      }
+      break
+    case ' ':
+      if (!isZoomed) {
+        images[currentCenterIndex!].classList.add('zoomed')
+        updateStackLayout()
+      }
+      break
   }
-
-  // Normal: keyboard navigation with scrolling state
-  if (!isZoomed) {
-    flashScrollingState(imageStack)
-  }
-
-  const nextIndex = event.key === 'ArrowRight'
-    ? Math.min(currentCenterIndex + 1, images.length - 1)
-    : Math.max(currentCenterIndex - 1, 0)
-
-  // Prevent switching at boundary
-  if (nextIndex === currentCenterIndex) {
-    return
-  }
-
-  event.preventDefault()
-  switchToNextImage(nextIndex, images, isZoomed)
-  lastSwitchTime = currentTime
 }
 
 // --- Click Events ---
@@ -524,7 +548,7 @@ function handleClick(event: MouseEvent): void {
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
 
-    switchToNextImage(clickedIndex, images, !isZoomed)
+    switchToNextImage(images, clickedIndex, !isZoomed)
     return
   }
 
@@ -562,13 +586,13 @@ function handleWheelOnZoomed(event: WheelEvent, currentCenterIndex: number, imag
   }
 
   event.preventDefault()
-  switchToNextImage(nextIndex, images, true)
+  switchToNextImage(images, nextIndex, true)
 
   lastSwitchTime = currentTime
   scrollAccumulator = 0
 }
 
-function handleWheelOnNormal(imageStack: HTMLElement, event: WheelEvent): void {
+function handleWheelOnNormal(event: WheelEvent, imageStack: HTMLElement): void {
   // Prevent rapid wheel events
   if (isWheeling) {
     return
@@ -616,7 +640,7 @@ function handleWheel(event: WheelEvent): void {
   }
 
   // Normal: wheel to scroll stack
-  handleWheelOnNormal(imageStack, event)
+  handleWheelOnNormal(event, imageStack)
 }
 
 document.addEventListener('astro:before-swap', cleanup)
