@@ -172,7 +172,7 @@ let cachedLayoutConfig: { width: number, height: number, result: ReturnType<type
 let cachedSpacingFactor: { width: number, result: number } | null = null
 let stackScrollOffset = 0
 let scrollAccumulator = 0
-let lastImageSwitchTime = 0
+let lastSwitchTime = 0
 let isWheeling = false
 
 function cleanup(): void {
@@ -188,7 +188,7 @@ function cleanup(): void {
   cachedSpacingFactor = null
   stackScrollOffset = 0
   scrollAccumulator = 0
-  lastImageSwitchTime = 0
+  lastSwitchTime = 0
   isWheeling = false
 }
 
@@ -414,12 +414,19 @@ function updateStackLayoutOnResize(): void {
 // EVENT HANDLERS
 // ==========================================================================================================================================================
 
-// --- Resize Events ---
-function handleResize(): void {
-  clearTimeout(resizeTimer)
-  resizeTimer = window.setTimeout(() => {
-    requestAnimationFrame(updateStackLayoutOnResize)
-  }, 100)
+function flashScrollingState(imageStack: HTMLElement, duration: number = 400): void {
+  imageStack.classList.add('scrolling')
+
+  // Clear existing timer
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+
+  // Set new timer
+  scrollTimer = window.setTimeout(() => {
+    imageStack.classList.remove('scrolling')
+    scrollTimer = null
+  }, duration)
 }
 
 function switchToNextImage(nextIndex: number, images: HTMLImageElement[], shouldZoom: boolean): void {
@@ -430,6 +437,7 @@ function switchToNextImage(nextIndex: number, images: HTMLImageElement[], should
   stackScrollOffset = 0
   currentCenterIndex = nextIndex
 
+  // If the current center index is zoomed or the next index is not zoomed, shouldZoom is true
   if (shouldZoom) {
     images[currentCenterIndex].classList.add('zoomed')
   }
@@ -437,23 +445,28 @@ function switchToNextImage(nextIndex: number, images: HTMLImageElement[], should
   updateStackLayout()
 }
 
+// --- Resize Events ---
+function handleResize(): void {
+  clearTimeout(resizeTimer)
+  resizeTimer = window.setTimeout(() => {
+    requestAnimationFrame(updateStackLayoutOnResize)
+  }, 100)
+}
+
 // --- Keyboard Events ---
 function handleKeyDown(event: KeyboardEvent): void {
+  // Prevent non-arrow key events
   if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
     return
   }
 
-  const currentTime = Date.now()
-  if (currentTime - lastImageSwitchTime < switchCooldown) {
-    return
-  }
-
   const imageStack = getImageStack()
+  const images = getImages()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
   }
 
-  const images = getImages()
+  // Check if valid center index
   if (images.length === 0
     || currentCenterIndex === null
     || currentCenterIndex < 0
@@ -461,9 +474,18 @@ function handleKeyDown(event: KeyboardEvent): void {
     return
   }
 
-  event.preventDefault()
-
   const isZoomed = images[currentCenterIndex].classList.contains('zoomed')
+  const currentTime = Date.now()
+
+  // Zoomed: keyboard navigation with switch cooldown
+  if (isZoomed && (currentTime - lastSwitchTime < switchCooldown)) {
+    return
+  }
+
+  // Normal: keyboard navigation with scrolling state
+  if (!isZoomed) {
+    flashScrollingState(imageStack)
+  }
 
   const nextIndex = event.key === 'ArrowRight'
     ? Math.min(currentCenterIndex + 1, images.length - 1)
@@ -474,8 +496,9 @@ function handleKeyDown(event: KeyboardEvent): void {
     return
   }
 
+  event.preventDefault()
   switchToNextImage(nextIndex, images, isZoomed)
-  lastImageSwitchTime = currentTime
+  lastSwitchTime = currentTime
 }
 
 // --- Click Events ---
@@ -493,7 +516,7 @@ function handleClick(event: MouseEvent): void {
   const target = event.target as HTMLElement
   const clickedImage = target.closest('.image-item') as HTMLImageElement
 
-  // Click on image
+  // 1. Click on image
   if (clickedImage) {
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
@@ -502,7 +525,7 @@ function handleClick(event: MouseEvent): void {
     return
   }
 
-  // Click on empty space
+  // 2. Click on empty space
   if (target.closest('.image-stack') && currentCenterIndex !== null) {
     images[currentCenterIndex].classList.remove('zoomed')
     updateStackLayout()
@@ -511,10 +534,9 @@ function handleClick(event: MouseEvent): void {
 
 // --- Wheel Events ---
 function handleWheelOnZoomed(event: WheelEvent, currentCenterIndex: number, images: HTMLImageElement[]): void {
-  const currentTime = Date.now()
-
   // Prevent rapid scrolling
-  if (currentTime - lastImageSwitchTime < switchCooldown) {
+  const currentTime = Date.now()
+  if (currentTime - lastSwitchTime < switchCooldown) {
     return
   }
 
@@ -536,9 +558,10 @@ function handleWheelOnZoomed(event: WheelEvent, currentCenterIndex: number, imag
     return
   }
 
+  event.preventDefault()
   switchToNextImage(nextIndex, images, true)
 
-  lastImageSwitchTime = currentTime
+  lastSwitchTime = currentTime
   scrollAccumulator = 0
 }
 
@@ -547,24 +570,17 @@ function handleWheelOnNormal(imageStack: HTMLElement, event: WheelEvent): void {
   if (isWheeling) {
     return
   }
+
+  event.preventDefault()
   isWheeling = true
 
   const { spacing } = getCachedLayoutConfig()
   const delta = event.deltaY * scrollDamping
+
   stackScrollOffset += delta
+  flashScrollingState(imageStack)
 
-  imageStack.classList.add('scrolling')
-
-  // Clear existing timer and set new
-  if (scrollTimer) {
-    clearTimeout(scrollTimer)
-  }
-
-  scrollTimer = window.setTimeout(() => {
-    imageStack.classList.remove('scrolling')
-    scrollTimer = null
-  }, 400)
-
+  // Prevent rapid calculation from applyImageOffsets
   requestAnimationFrame(() => {
     applyImageOffsets(spacing)
     isWheeling = false
@@ -572,15 +588,13 @@ function handleWheelOnNormal(imageStack: HTMLElement, event: WheelEvent): void {
 }
 
 function handleWheel(event: WheelEvent): void {
-  event.preventDefault()
-
   const imageStack = getImageStack()
+  const images = getImages()
   if (!imageStack || !imageStack.classList.contains('loaded')) {
     return
   }
 
-  // Check if valid images and center index
-  const images = getImages()
+  // Check if valid center index
   if (images.length === 0
     || currentCenterIndex === null
     || currentCenterIndex < 0
@@ -595,6 +609,7 @@ function handleWheel(event: WheelEvent): void {
     return
   }
 
+  // Normal: wheel to scroll stack
   handleWheelOnNormal(imageStack, event)
 }
 
