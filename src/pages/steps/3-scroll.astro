@@ -469,7 +469,7 @@ function handleArrowKeys(
   currentTime: number,
 ): void {
   // Zoomed: add switch cooldown
-  if (isZoomed && (currentTime - lastSwitchTime < switchCooldown / 3 * 2)) {
+  if (isZoomed && (currentTime - lastSwitchTime < 400)) {
     return
   }
 
