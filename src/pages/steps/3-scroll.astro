@@ -158,10 +158,10 @@ import Layout from '@/layouts/Layout.astro'
 <script>
 const stackSlope = -0.6
 const loadDuration = 1000
-const switchDuration = 800
+const switchModeDuration = 800
+const switchImageCooldown = 400
 const scrollDamping = 0.92
 const scrollThreshold = 50
-const switchCooldown = 600
 
 let resizeTimer: number
 let scrollTimer: number | null = null
@@ -402,7 +402,7 @@ function setupStackLayout(): void {
   // Add loaded to allow interaction
   setTimeout(() => {
     imageStack.classList.add('loaded')
-  }, loadDuration + switchDuration)
+  }, loadDuration + switchModeDuration)
 }
 
 function updateStackLayout(): void {
@@ -432,7 +432,7 @@ function flashScrollingState(imageStack: HTMLElement): void {
   scrollTimer = window.setTimeout(() => {
     imageStack.classList.remove('scrolling')
     scrollTimer = null
-  }, 400)
+  }, switchImageCooldown)
 }
 
 function switchToNextImage(images: HTMLImageElement[], nextIndex: number, shouldZoom: boolean): void {
@@ -469,7 +469,7 @@ function handleArrowKeys(
   currentTime: number,
 ): void {
   // Zoomed: add switch cooldown
-  if (isZoomed && (currentTime - lastSwitchTime < 400)) {
+  if (isZoomed && (currentTime - lastSwitchTime < switchImageCooldown)) {
     return
   }
 
@@ -562,7 +562,7 @@ function handleClick(event: MouseEvent): void {
 function handleWheelOnZoomed(event: WheelEvent, currentCenterIndex: number, images: HTMLImageElement[]): void {
   // Prevent rapid scrolling
   const currentTime = Date.now()
-  if (currentTime - lastSwitchTime < switchCooldown) {
+  if (currentTime - lastSwitchTime < switchImageCooldown) {
     return
   }
 
