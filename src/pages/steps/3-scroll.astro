@@ -435,7 +435,12 @@ function flashScrollingState(imageStack: HTMLElement): void {
   }, switchImageCooldown)
 }
 
-function switchToNextImage(images: HTMLImageElement[], nextIndex: number, shouldZoom: boolean): void {
+function switchToNextImage(
+  imageStack: HTMLElement,
+  images: HTMLImageElement[],
+  nextIndex: number,
+  shouldZoom: boolean,
+): void {
   if (currentCenterIndex !== null) {
     images[currentCenterIndex].classList.remove('zoomed')
   }
@@ -445,6 +450,7 @@ function switchToNextImage(images: HTMLImageElement[], nextIndex: number, should
 
   // If the current center index is zoomed or the next index is not zoomed, shouldZoom is true
   if (shouldZoom) {
+    imageStack.classList.remove('scrolling')
     images[currentCenterIndex].classList.add('zoomed')
   }
 
@@ -488,7 +494,7 @@ function handleArrowKeys(
   }
 
   event.preventDefault()
-  switchToNextImage(images, nextIndex, isZoomed)
+  switchToNextImage(imageStack, images, nextIndex, isZoomed)
   lastSwitchTime = currentTime
 }
 
@@ -544,10 +550,16 @@ function handleClick(event: MouseEvent): void {
 
   // 1. Click on image
   if (clickedImage) {
+    const currentTime = Date.now()
+    if (currentTime - lastSwitchTime < switchImageCooldown) {
+      return
+    }
+
     const clickedIndex = images.indexOf(clickedImage)
     const isZoomed = clickedImage.classList.contains('zoomed')
 
-    switchToNextImage(images, clickedIndex, !isZoomed)
+    switchToNextImage(imageStack, images, clickedIndex, !isZoomed)
+    lastSwitchTime = currentTime
     return
   }
 
@@ -559,7 +571,12 @@ function handleClick(event: MouseEvent): void {
 }
 
 // --- Wheel Events ---
-function handleWheelOnZoomed(event: WheelEvent, currentCenterIndex: number, images: HTMLImageElement[]): void {
+function handleWheelOnZoomed(
+  event: WheelEvent,
+  currentCenterIndex: number,
+  imageStack: HTMLElement,
+  images: HTMLImageElement[],
+): void {
   // Prevent rapid scrolling
   const currentTime = Date.now()
   if (currentTime - lastSwitchTime < switchImageCooldown) {
@@ -585,7 +602,7 @@ function handleWheelOnZoomed(event: WheelEvent, currentCenterIndex: number, imag
   }
 
   event.preventDefault()
-  switchToNextImage(images, nextIndex, true)
+  switchToNextImage(imageStack, images, nextIndex, true)
 
   lastSwitchTime = currentTime
   scrollAccumulator = 0
@@ -634,7 +651,7 @@ function handleWheel(event: WheelEvent): void {
   // Zoomed: wheel to switch images
   const isZoomed = images[currentCenterIndex].classList.contains('zoomed')
   if (isZoomed) {
-    handleWheelOnZoomed(event, currentCenterIndex, images)
+    handleWheelOnZoomed(event, currentCenterIndex, imageStack, images)
     return
   }
 
