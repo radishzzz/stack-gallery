@@ -469,7 +469,7 @@ function handleArrowKeys(
   currentTime: number,
 ): void {
   // Zoomed: add switch cooldown
-  if (isZoomed && (currentTime - lastSwitchTime < switchCooldown)) {
+  if (isZoomed && (currentTime - lastSwitchTime < switchCooldown / 3 * 2)) {
     return
   }
 
@@ -478,7 +478,7 @@ function handleArrowKeys(
     flashScrollingState(imageStack)
   }
 
-  const nextIndex = event.key === 'ArrowRight'
+  const nextIndex = event.key === 'ArrowLeft'
     ? Math.min(currentIndex + 1, images.length - 1)
     : Math.max(currentIndex - 1, 0)
 
