@@ -581,6 +581,13 @@ function handleClick(event: MouseEvent): void {
     return
   }
 
+  // Check if valid center index
+  if (currentCenterIndex === null
+    || currentCenterIndex < 0
+    || currentCenterIndex >= images.length) {
+    return
+  }
+
   const target = event.target as HTMLElement
   const clickedImage = target.closest('.image-item') as HTMLImageElement
 
@@ -596,7 +603,7 @@ function handleClick(event: MouseEvent): void {
     const isZoomed = clickedImage.classList.contains('zoomed')
     const shouldZoom = !isZoomed
 
-    switchToNextImage(imageStack, images, clickedIndex, clickedIndex, shouldZoom)
+    switchToNextImage(imageStack, images, currentCenterIndex, clickedIndex, shouldZoom)
     lastSwitchTime = currentTime
     return
   }
