@@ -407,11 +407,7 @@ function setupStackLayout(): void {
 // EVENT HANDLERS
 // ==========================================================================================================================================================
 
-/**
- * Validate event handler prerequisites
- * Returns null if validation fails, otherwise returns validated elements
- */
-function validateEventHandlerState(): {
+function getStackDate(): {
   imageStack: HTMLElement
   images: HTMLImageElement[]
   currentCenterIndex: number
@@ -485,12 +481,12 @@ function switchToNextImage(
 function handleResize(): void {
   clearTimeout(resizeTimer)
   resizeTimer = window.setTimeout(() => {
-    const state = validateEventHandlerState()
-    if (!state) {
+    const stackDate = getStackDate()
+    if (!stackDate) {
       return
     }
 
-    const { imageStack, images, currentCenterIndex } = state
+    const { imageStack, images, currentCenterIndex } = stackDate
     const { size, scale, spacing } = getCachedLayoutConfig()
     applyImageSizeAndScale(imageStack, size, scale)
 
@@ -538,12 +534,12 @@ function handleArrowKeys(
 }
 
 function handleKeyDown(event: KeyboardEvent): void {
-  const state = validateEventHandlerState()
-  if (!state) {
+  const stackDate = getStackDate()
+  if (!stackDate) {
     return
   }
 
-  const { imageStack, images, currentCenterIndex } = state
+  const { imageStack, images, currentCenterIndex } = stackDate
   const isZoomed = images[currentCenterIndex].classList.contains('zoomed')
   const currentTime = Date.now()
 
@@ -568,12 +564,12 @@ function handleKeyDown(event: KeyboardEvent): void {
  * Handle click events for zoomed and normal states
  */
 function handleClick(event: MouseEvent): void {
-  const state = validateEventHandlerState()
-  if (!state) {
+  const stackDate = getStackDate()
+  if (!stackDate) {
     return
   }
 
-  const { imageStack, images, currentCenterIndex } = state
+  const { imageStack, images, currentCenterIndex } = stackDate
   const target = event.target as HTMLElement
   const clickedImage = target.closest('.image-item') as HTMLImageElement
 
@@ -672,12 +668,12 @@ function handleWheelOnNormal(
 }
 
 function handleWheel(event: WheelEvent): void {
-  const state = validateEventHandlerState()
-  if (!state) {
+  const stackDate = getStackDate()
+  if (!stackDate) {
     return
   }
 
-  const { imageStack, images, currentCenterIndex } = state
+  const { imageStack, images, currentCenterIndex } = stackDate
   const isZoomed = images[currentCenterIndex].classList.contains('zoomed')
 
   // Zoomed: wheel to switch images
