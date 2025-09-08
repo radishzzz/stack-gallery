@@ -541,6 +541,8 @@ function handleSpaceKey(
   event.preventDefault()
   const { spacing } = getCachedLayoutConfig()
 
+  imageStack.classList.remove('scrolling')
+
   // If the stack has a scroll offset, toggle the nearest center index
   if (stackScrollOffset !== 0) {
     const nextIndex = Math.max(0, Math.min(currentIndex + Math.round(stackScrollOffset / spacing), images.length - 1))
@@ -550,7 +552,6 @@ function handleSpaceKey(
     stackScrollOffset = 0
     currentCenterIndex = nextIndex
 
-    imageStack.classList.remove('scrolling')
     images[nextIndex].classList.toggle('zoomed')
 
     applyImageOffsets(images, nextIndex, spacing)
