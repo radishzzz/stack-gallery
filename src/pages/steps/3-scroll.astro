@@ -456,6 +456,7 @@ function switchToNextImage(
 
   // Remove zoomed class from current index
   images[currentIndex].classList.remove('zoomed')
+
   stackScrollOffset = 0
   currentCenterIndex = nextIndex
 
@@ -531,6 +532,36 @@ function handleArrowKeys(
   lastSwitchTime = currentTime
 }
 
+function handleSpaceKey(
+  event: KeyboardEvent,
+  imageStack: HTMLElement,
+  images: HTMLImageElement[],
+  currentIndex: number,
+): void {
+  event.preventDefault()
+  const { spacing } = getCachedLayoutConfig()
+
+  // If the stack has a scroll offset, toggle the nearest center index
+  if (stackScrollOffset !== 0) {
+    const nextIndex = Math.max(0, Math.min(currentIndex + Math.round(stackScrollOffset / spacing), images.length - 1))
+
+    images[currentIndex].classList.remove('zoomed')
+
+    stackScrollOffset = 0
+    currentCenterIndex = nextIndex
+
+    imageStack.classList.remove('scrolling')
+    images[nextIndex].classList.toggle('zoomed')
+
+    applyImageOffsets(images, nextIndex, spacing)
+    return
+  }
+
+  // If the stack has no scroll offset, toggle the current index
+  images[currentIndex].classList.toggle('zoomed')
+  applyImageOffsets(images, currentIndex, spacing)
+}
+
 function handleKeyDown(event: KeyboardEvent): void {
   const stackDate = getStackDate()
   if (!stackDate) {
@@ -548,10 +579,7 @@ function handleKeyDown(event: KeyboardEvent): void {
       handleArrowKeys(event, imageStack, images, currentCenterIndex, isZoomed, currentTime)
       break
     case ' ': {
-      const { spacing } = getCachedLayoutConfig()
-      imageStack.classList.remove('scrolling')
-      images[currentCenterIndex].classList.toggle('zoomed')
-      applyImageOffsets(images, currentCenterIndex, spacing)
+      handleSpaceKey(event, imageStack, images, currentCenterIndex)
       break
     }
   }
@@ -681,9 +709,7 @@ function handleWheel(event: WheelEvent): void {
   }
 
   // Normal: wheel to scroll stack
-  if (!isZoomed) {
-    handleWheelOnNormal(event, imageStack, images, currentCenterIndex)
-  }
+  handleWheelOnNormal(event, imageStack, images, currentCenterIndex)
 }
 
 // Astro Events

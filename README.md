@@ -13,7 +13,6 @@ An interactive 3D image stack gallery. Inspired by [Every Second](https://www.be
 ## Features
 
 - Build with Astro and TypeScript
-- Excellent Interaction
 - Smooth animations
 - Responsive design
 - Optimized performance
